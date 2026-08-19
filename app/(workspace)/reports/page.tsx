@@ -81,14 +81,17 @@ export default function ReportsPage() {
             columns={cols}
             rows={wp.rows}
             thClassName={(c) => (c === "THB" || /amount|dep|cost|origin|THB|บาท|金额|金額/i.test(c) ? "num" : undefined)}
-            tdClassName={(_cell, _i, j) => (j === cols.length - 1 || j >= 2 ? "num" : undefined)}
+            tdClassName={(_cell, _i, j) => {
+              const c = cols[j] ?? "";
+              return c === "THB" || /amount|dep|cost|opening|closing|THB|บาท|金额|金額/i.test(c) ? "num" : undefined;
+            }}
             tdStyle={(_cell, i) => {
               const line = wp.rows[i]?.[0] ?? "";
               const heavy =
                 sel !== "ledger" &&
                 (i === wp.rows.length - 1 ||
                   /^(Total |Adjusted profit|Taxable profit|Corporate income tax|Tax payable|Current tax)/i.test(line));
-              return { fontWeight: heavy ? 700 : 500, fontSize: 13 };
+              return { fontWeight: heavy ? 700 : 500 };
             }}
           />
           {wp.note && <div className="callout" style={{ marginTop: 14, fontSize: 13 }}>{pick(lang, wp.note)}</div>}

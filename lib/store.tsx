@@ -22,6 +22,7 @@ import {
   type LawMode,
 } from "./model";
 import { computeProvision, liveAdjustments, type AuditNode, type Provision } from "./engine";
+import { computeBoiPnl, scenarioTax, type AllocDriver, type BoiPnl } from "./boi";
 import { hydrateSeedFile, ingestBrowserFiles, type IngestedFile } from "./ingest";
 import {
   ACCOUNT_SEED,
@@ -177,6 +178,16 @@ type Store = {
   markLawAlertsRead: () => void;
   dismissLawAlert: (id: string) => void;
   unreadLawAlertCount: number;
+  boiEnabled: boolean;
+  setBoiEnabled: (on: boolean) => void;
+  rentDriver: AllocDriver;
+  setRentDriver: (d: AllocDriver) => void;
+  approvedBoiRecs: string[];
+  approveBoiRec: (id: string) => void;
+  certExtracted: boolean;
+  extractBoiCert: () => void;
+  boiPnl: BoiPnl;
+  scenario: { areaTax: number; revTax: number; diff: number };
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -227,6 +238,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [corpusPatches, setCorpusPatches] = useState<Record<string, CorpusPatch>>({});
   const [lawAlerts, setLawAlerts] = useState<LawAlert[]>([]);
   const [lawReviewOpen, setLawReviewOpen] = useState(false);
+  const [boiEnabled, setBoiEnabledState] = useState(false);
+  const [rentDriver, setRentDriverState] = useState<AllocDriver>("floor-area");
+  const [approvedBoiRecs, setApprovedBoiRecs] = useState<string[]>([]);
+  const [certExtracted, setCertExtracted] = useState(false);
 
   const actor = actorOf(mode);
   const readOnly = mode === "defence";
@@ -288,6 +303,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const t12 = localStorage.getItem("cit24_tas12");
     if (t12 === "1" || t12 === "0") setTas12EnabledState(t12 === "1");
     else setTas12EnabledState(nextLaw === "complex");
+    const boi = localStorage.getItem("cit24_boi");
+    setBoiEnabledState(nextLaw === "complex" && boi === "1");
     setReady(true);
   }, []);
 
@@ -807,6 +824,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     logEvent(on
       ? "TAS 12 deferred tax turned on — Complex mode default"
       : "TAS 12 deferred tax turned off — Compliance mode default");
+    if (!on) {
+      setBoiEnabledState(false);
+      localStorage.setItem("cit24_boi", "0");
+      logEvent("BOI module closed — Compliance mode does not mix promoted and non-promoted tax bases");
+    }
   }, [readOnly, canMutate, flash, logEvent]);
 
   const runLawReview = useCallback(() => {
@@ -834,6 +856,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [logEvent]);
 
   const unreadLawAlertCount = useMemo(() => countUnreadLawAlerts(lawAlerts), [lawAlerts]);
+
+  const boiPnl = useMemo(
+    () => computeBoiPnl({ rentDriver, approvedRecs: approvedBoiRecs }),
+    [rentDriver, approvedBoiRecs],
+  );
+  const scenario = useMemo(() => {
+    const areaTax = scenarioTax("floor-area").currentTax;
+    const revTax = scenarioTax("revenue").currentTax;
+    return { areaTax, revTax, diff: Math.abs(areaTax - revTax) };
+  }, []);
+
+  const setBoiEnabled = useCallback((on: boolean) => {
+    if (on && lawMode !== "complex") {
+      flash("Switch Law depth to Complex before opening the BOI module");
+      return;
+    }
+    if (readOnly) {
+      flash("Audit-defence mode is read-only");
+      return;
+    }
+    setBoiEnabledState(on);
+    localStorage.setItem("cit24_boi", on ? "1" : "0");
+    logEvent(on
+      ? "BOI Tax Segregation & Allocation Engine opened — certificate-level tax ledger"
+      : "BOI module closed");
+    flash(on
+      ? "BOI module on. Ledger is classified BOI-01 / BOI-02 / Non-BOI / Shared. ETR stays current tax ÷ PBT."
+      : "BOI module off.");
+  }, [lawMode, readOnly, flash, logEvent]);
+
+  const setRentDriver = useCallback((d: AllocDriver) => {
+    setRentDriverState(d);
+    logEvent(`BOI factory-rent allocation driver set to ${d}`);
+  }, [logEvent]);
+
+  const approveBoiRec = useCallback((id: string) => {
+    if (!canMutate) {
+      flash("Period is locked");
+      return;
+    }
+    setApprovedBoiRecs((s) => (s.includes(id) ? s : [...s, id]));
+    logEvent(`Human approved BOI allocation AI proposal ${id} — engine did not auto-post`);
+    flash(`Allocation ${id} approved. AI proposed; human posted the policy.`);
+  }, [canMutate, flash, logEvent]);
+
+  const extractBoiCert = useCallback(() => {
+    setCertExtracted(true);
+    logEvent("BOI certificate AI reader extracted 60-1234-1-00-1-0 and 60-1234-2-00-1-0 — awaiting human confirm");
+    flash("Two BOI cards extracted. Human must confirm activity, capacity, holiday and cap before the profile is live.");
+  }, [flash, logEvent]);
 
   const setTas12Enabled = useCallback((on: boolean) => {
     if (readOnly) {
@@ -876,8 +948,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly,
       lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument,
       lawAlerts, lawReviewOpen, setLawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount,
+      boiEnabled, setBoiEnabled, rentDriver, setRentDriver, approvedBoiRecs, approveBoiRec, certExtracted, extractBoiCert, boiPnl, scenario,
     }),
-    [ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang, clientId, setClientId, toast, flash, navOpen, copilotOpen, pendingAsk, ask, consumeAsk, audit, statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount, mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl, locked, toggleLock, materiality, pnd51, setPnd51, evid, toggleEv, fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal, runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50, priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly, lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument, lawAlerts, lawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount],
+    [ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang, clientId, setClientId, toast, flash, navOpen, copilotOpen, pendingAsk, ask, consumeAsk, audit, statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount, mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl, locked, toggleLock, materiality, pnd51, setPnd51, evid, toggleEv, fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal, runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50, priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly, lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument, lawAlerts, lawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount, boiEnabled, setBoiEnabled, rentDriver, setRentDriver, approvedBoiRecs, approveBoiRec, certExtracted, extractBoiCert, boiPnl, scenario],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

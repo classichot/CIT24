@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   AlertTriangle,
+  Award,
   BookOpen,
   Building2,
   Check,
@@ -18,6 +19,7 @@ import {
   Menu,
   MessageSquare,
   Scale,
+  ScrollText,
   Settings,
   Shield,
   Sparkles,
@@ -30,6 +32,7 @@ import { useStore } from "@/lib/store";
 import { ModeToggle } from "@/components/ModeToggle";
 import { LangToggle } from "@/components/LangToggle";
 import { LawToggle } from "@/components/LawToggle";
+import { BoiToggle } from "@/components/BoiToggle";
 import { Copilot } from "@/components/Copilot";
 import { AuditTrail } from "@/components/AuditTrail";
 import { pick, T } from "@/lib/i18n";
@@ -56,12 +59,19 @@ const NAV = [
     { href: "/deferred", en: "Deferred tax", th: "ภาษีรอตัดบัญชี", zh: "递延所得税", ja: "繰延税金", icon: Timer },
     { href: "/disclosure", en: "TAS 12 disclosure", th: "หมายเหตุ ต.บ. 12", zh: "TAS 12 附注", ja: "TAS 12注記", icon: FileText },
   ]},
+  { group: "BOI", groupTh: "BOI", groupZh: "BOI", groupJa: "BOI", complex: true, boi: true, items: [
+    { href: "/boi", en: "BOI desk", th: "โต๊ะ BOI", zh: "BOI 工作台", ja: "BOIデスク", icon: Award },
+    { href: "/boi/certificates", en: "Certificates", th: "บัตรส่งเสริม", zh: "促进证书", ja: "促進証書", icon: FileText },
+    { href: "/boi/allocation", en: "Allocation AI", th: "ปันส่วน AI", zh: "分摊 AI", ja: "配賦AI", icon: Sparkles },
+    { href: "/boi/pnl", en: "Project tax P&L", th: "กำไรภาษีโครงการ", zh: "项目税P&L", ja: "プロジェクト税P&L", icon: Scale },
+  ]},
   { group: "Filings", groupTh: "การยื่นแบบ", groupZh: "申报", groupJa: "申告", items: [
     { href: "/pnd51", en: "PND51 simulator", th: "ภ.ง.ด.51 แบบจำลอง", zh: "PND51 模拟", ja: "PND51シミュレーター", icon: AlertTriangle, hot: true },
     { href: "/pnd50", en: "PND50 & filing", th: "ภ.ง.ด.50 และการยื่น", zh: "PND50 与申报", ja: "PND50と申告", icon: FileText },
     { href: "/reports", en: "Reports", th: "รายงาน", zh: "报告", ja: "レポート", icon: Database },
   ]},
   { group: "Control", groupTh: "การควบคุม", groupZh: "控制", groupJa: "統制", items: [
+    { href: "/playbook", en: "Law-depth playbook", th: "คู่มือความลึกกฎหมาย", zh: "法规深度手册", ja: "法令プレイブック", icon: ScrollText },
     { href: "/review", en: "Review & approval", th: "สอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認", icon: Check },
     { href: "/evidence", en: "Audit defence", th: "แฟ้มต่อสู้คดี", zh: "税务稽查应对", ja: "税務調査対応", icon: Shield },
     { href: "/ecosystem", en: "24 ecosystem", th: "ระบบนิเวศ 24", zh: "24 生态", ja: "24エコシステム", icon: Scale },
@@ -104,7 +114,15 @@ const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja
   "/evidence": { kicker: { en: "Audit defence mode", th: "โหมดต่อสู้คดี", zh: "稽查应对模式", ja: "調査対応モード" }, title: { en: "Evidence room", th: "ห้องหลักฐาน", zh: "证据室", ja: "証憑ルーム" } },
   "/ecosystem": { kicker: { en: "Integrated 24", th: "ระบบ 24", zh: "24 集成", ja: "統合24" }, title: { en: "Tax ecosystem", th: "ระบบนิเวศภาษี", zh: "税务生态", ja: "税務エコシステム" } },
   "/copilot": { kicker: { en: "Intelligence", th: "ปัญญาประดิษฐ์", zh: "智能", ja: "インテリジェンス" }, title: { en: "Ask CIT24", th: "ถาม CIT24", zh: "询问 CIT24", ja: "CIT24に質問" } },
+  "/playbook": { kicker: { en: "Playbook", th: "คู่มือ", zh: "手册", ja: "プレイブック" }, title: { en: "Compliance vs Complex", th: "เกณฑ์ขั้นต่ำกับครบทุกกฎหมาย", zh: "合规与完整", ja: "コンプライアンスとコンプレックス" } },
   "/settings": { kicker: { en: "Workspace", th: "พื้นที่ทำงาน", zh: "工作区", ja: "ワークスペース" }, title: { en: "Settings", th: "ตั้งค่า", zh: "设置", ja: "設定" } },
+  "/boi": { kicker: { en: "BOI engine", th: "เครื่องยนต์ BOI", zh: "BOI 引擎", ja: "BOIエンジン" }, title: { en: "Incentive desk", th: "โต๊ะสิทธิประโยชน์", zh: "优惠工作台", ja: "インセンティブデスク" } },
+  "/boi/certificates": { kicker: { en: "Digital certificate", th: "บัตรดิจิทัล", zh: "电子证书", ja: "デジタル証書" }, title: { en: "BOI certificates", th: "บัตรส่งเสริม BOI", zh: "BOI 证书", ja: "BOI証書" } },
+  "/boi/allocation": { kicker: { en: "Killer feature", th: "จุดเด่น", zh: "核心能力", ja: "中核機能" }, title: { en: "BOI Allocation AI", th: "AI ปันส่วน BOI", zh: "BOI 分摊 AI", ja: "BOI配賦AI" } },
+  "/boi/revenue": { kicker: { en: "Eligibility", th: "คุณสมบัติ", zh: "资格", ja: "適格性" }, title: { en: "Revenue qualification", th: "คุณสมบัติรายได้", zh: "收入资格", ja: "収益適格" } },
+  "/boi/pnl": { kicker: { en: "Certificate P&L", th: "กำไรรายบัตร", zh: "证书损益", ja: "証書P&L" }, title: { en: "BOI tax P&L", th: "กำไรขาดทุนภาษี BOI", zh: "BOI 税损益", ja: "BOI税P&L" } },
+  "/boi/losses": { kicker: { en: "Post-exemption window", th: "กรอบหลังยกเว้น", zh: "免税后窗口", ja: "免除後期間" }, title: { en: "BOI loss ledger", th: "ทะเบียนขาดทุน BOI", zh: "BOI 亏损台账", ja: "BOI欠損台帳" } },
+  "/boi/packages": { kicker: { en: "e-Tax + PND50", th: "e-Tax + ภ.ง.ด.50", zh: "e-Tax + PND50", ja: "e-Tax + PND50" }, title: { en: "BOI and RD packs", th: "ชุด BOI และสรรพากร", zh: "BOI 与税局资料包", ja: "BOIと歳入パック" } },
 };
 
 function isActive(path: string, href: string) {
@@ -114,7 +132,7 @@ function isActive(path: string, href: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const router = useRouter();
-  const { logout, toast, navOpen, setNavOpen, mode, clientId, setCopilotOpen, copilotOpen, lang, adjustments, lawMode } = useStore();
+  const { logout, toast, navOpen, setNavOpen, mode, clientId, setCopilotOpen, copilotOpen, lang, adjustments, lawMode, boiEnabled } = useStore();
   const user = mode === "advisor" ? ADVISOR_USER : mode === "defence" ? DEFENCE_USER : CORPORATE_USER;
   const client = CLIENTS.find((c) => c.id === clientId) ?? CLIENTS[0];
   const title = TITLES[path] || { kicker: { en: "CIT24", th: "CIT24" }, title: { en: "Thai CIT OS", th: "ระบบภาษีนิติบุคคล", zh: "泰国企业所得税系统", ja: "タイ法人税OS" } };
@@ -144,9 +162,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Link>
         <div className="sidebar-law">
           <LawToggle variant="block" />
+          {lawMode === "complex" && <div style={{ marginTop: 10 }}><BoiToggle variant="block" /></div>}
         </div>
         <nav style={{ flex: 1, overflow: "auto", padding: "10px 8px" }}>
           {NAV.map((g) => {
+            if ("complex" in g && g.complex && lawMode !== "complex") return null;
+            if ("boi" in g && g.boi && !boiEnabled) return null;
             const items = g.items.filter((i) => !("advisor" in i && i.advisor) || mode === "advisor");
             if (!items.length) return null;
             return (
@@ -159,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <Icon size={15} />
                       <span style={{ flex: 1 }}>{loc(lang, item.en, item.th, item.zh, item.ja)}</span>
                       {item.href === "/ledger" && <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.7 }}>{adjustments.length}</span>}
-                      {"hot" in item && item.hot && <span style={{ width: 6, height: 6, background: "var(--color-accent)", flex: "none" }} />}
+                      {"hot" in item && Boolean((item as { hot?: boolean }).hot) && <span style={{ width: 6, height: 6, background: "var(--color-accent)", flex: "none" }} />}
                     </Link>
                   );
                 })}
@@ -210,6 +231,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {lang === "th" ? "ภ.ง.ด.51" : "PND51"} · {loc(lang, "due 31 Aug 2026 · 13 days", "ครบ 31 ส.ค. 2569 · 13 วัน", "截止 2026年8月31日 · 13天", "期限 2026年8月31日 · 13日")}
           </div>
           <LawToggle />
+          {lawMode === "complex" && <BoiToggle />}
           <LangToggle />
           <ModeToggle compact />
           <button className="btn btn-secondary header-hide-sm" onClick={() => setCopilotOpen(!copilotOpen)}><MessageSquare size={16} /><T en="Ask CIT24" th="ถาม CIT24" zh="询问 CIT24" ja="CIT24に質問" /></button>

@@ -23,6 +23,8 @@ export const SUGGESTIONS = [
   "Why is entertainment added back?",
   "Will PND51 attract a surcharge?",
   "Explain the latest law alerts",
+  "How does BOI allocation work?",
+  "What is the difference between Compliance and Complex?",
 ];
 
 export function copilotIntro(corpus: CorpusInstrument[] = CORPUS_SEED, lawMode: LawMode = "compliance"): CopilotMsg {
@@ -129,6 +131,17 @@ export function answerCopilot(
     };
   }
 
+  if (/compliance vs|complex mode|law depth|เกณฑ์ขั้นต่ำ|ครบทุกกฎหมาย|difference between compliance|playbook|what differs/.test(t) && !/entertain|51|surcharge/.test(t)) {
+    return {
+      role: "assistant",
+      text: "Law depth is not Corporate / Advisory / Defence.\n\nCompliance is the acceptable filing bar: s.65 taxable profit, 5-year FIFO losses, material 65 bis/ter, PND51/50, WHT, RD 145. TAS 12 deferred defaults off. BOI is closed. Copilot will not volunteer Pillar Two or TAS 12 DTL.\n\nComplex loads every related law: full rule pack and corpus (including obsolete history), TAS 12 deferred on, GMT24 / TFRIC 23 / TAS 34 / TP GloBE visible. BOI is still a separate On/Off module.\n\nWhat never changes: ETR = current tax ÷ PBT. AI proposes; humans approve.\n\nOpen the playbook for the full table.",
+      cites: [
+        { label: "Law-depth playbook", href: "/playbook" },
+        { label: "Settings", href: "/settings" },
+      ],
+    };
+  }
+
   if (/based on|what law|regulation corpus|คลังกฎหมาย|แหล่งกฎหมาย|what (are we|is cit24) (based|grounded)|tfric 13|tfrs 15/.test(t) && !/entertain|51|surcharge/.test(t)) {
     const s = corpusStats(visible);
     const stale = deep ? corpus.filter((c) => isCorpusStale(c.status)) : [];
@@ -143,6 +156,25 @@ export function answerCopilot(
         { label: "Rule library", href: "/rules" },
         ...(tas12 ? [citeInst(tas12)] : []),
         ...stale.slice(0, 2).map(citeInst),
+      ],
+    };
+  }
+
+  if (/boi|allocation ai|promoted|บัตรส่งเสริม|ปันส่วน/.test(t) && !/entertain|51|surcharge/.test(t)) {
+    if (!deep) {
+      return {
+        role: "assistant",
+        text: "BOI is a Complex-mode module, off by default. Switch Law depth to Complex, then turn BOI module On.\n\nIt is not another add-back. It is a certificate-level tax ledger: BOI-01 / BOI-02 / Non-BOI / Shared, then Direct → specific driver → revenue-ratio fallback (RD 0706/152). Company ETR stays current tax ÷ PBT.",
+        cites: [{ label: "Settings · Law depth", href: "/settings" }],
+      };
+    }
+    return {
+      role: "assistant",
+      text: "CIT24 BOI Tax Segregation & Allocation Engine is a separate module.\n\nArchitecture: TB/GL → tax mapper → classifier (BOI-01 | BOI-02 | Non-BOI | Shared) → shared allocation (policy + evidence + approver + version) → tax adjustments by certificate → revenue qualification (invoice → SKU → capacity) → project tax P&L → incentive / cap / BOI loss ledger → company CIT → PND50 annex + BOI e-Tax.\n\nDo not allocate every shared cost on revenue. Direct first, then an economic driver (floor area, machine hours, headcount), then revenue fallback. AI proposes; humans approve. I cannot post an allocation policy.\n\nTurn the module on from the sidebar BOI toggle.",
+      cites: [
+        { label: "BOI desk", href: "/boi" },
+        { label: "Allocation AI", href: "/boi/allocation" },
+        { label: "Project tax P&L", href: "/boi/pnl" },
       ],
     };
   }

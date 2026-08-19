@@ -1,9 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ModeToggle } from "@/components/ModeToggle";
 import { LangToggle } from "@/components/LangToggle";
 import { LawToggle } from "@/components/LawToggle";
+import { BoiToggle } from "@/components/BoiToggle";
 import { useStore } from "@/lib/store";
 import { ADVISOR_USER, CORPORATE_USER, DEFENCE_USER } from "@/lib/model";
 import { T } from "@/lib/i18n";
@@ -39,7 +41,10 @@ export default function SettingsPage() {
       <div className="panel">
         <div className="panel-head"><h4><T en="Law depth — Compliance or Complex" th="ความลึกกฎหมาย — เกณฑ์ขั้นต่ำหรือครบทุกกฎหมาย" zh="法规深度 — 合规或完整" ja="法令の深さ — コンプライアンス / コンプレックス" /></h4></div>
         <div className="panel-body">
-          <LawToggle />
+            <LawToggle />
+            <div style={{ marginTop: 10 }}>
+              <Link href="/playbook" className="btn btn-ghost" style={{ padding: 0 }}><T en="Playbook — Compliance vs Complex" th="คู่มือ — เกณฑ์ขั้นต่ำกับครบทุกกฎหมาย" /> →</Link>
+            </div>
           <p className="text-muted" style={{ fontSize: 13, marginTop: 12 }}>
             {lawMode === "compliance"
               ? <T en="Compliance is the acceptable filing bar: s.65 taxable profit and five-year FIFO losses, material s.65 bis/ter add-backs, s.67 bis PND51, WHT credits, PND50, RD 145 if PPE exists, current-tax provision. ETR = current tax ÷ PBT. TAS 12 deferred defaults off. Switch to Complex for the full TAS 12 register, Pillar Two exception, TFRIC 23, TP GloBE mapping and obsolete-instrument history." th="เกณฑ์ขั้นต่ำคือสิ่งที่ต้องทำเพื่อยื่นและตั้งประมาณการ: ม.65 กำไรสุทธิและขาดทุน 5 ปี FIFO บวกกลับสาระสำคัญ ม.65 ทวิ/ตรี ม.67 ทวิ ภ.ง.ด.51 เครดิต ณ ที่จ่าย ภ.ง.ด.50 พ.ร.ฎ. 145 ถ้ามีสินทรัพย์ถาวร ประมาณการภาษีงวดปัจจุบัน ETR = ภาษีงวดปัจจุบัน ÷ กำไรก่อนภาษี ต.บ. 12 รอตัดบัญชีปิดเป็นค่าเริ่มต้น" zh="合规是可接受的申报底线。TAS 12 递延默认关闭。ETR = 当期税 ÷ 税前利润。" ja="コンプライアンスは申告の最低バー。TAS 12繰延は既定オフ。ETRは当期税÷税引前利益。" />
@@ -47,6 +52,17 @@ export default function SettingsPage() {
           </p>
         </div>
       </div>
+      {lawMode === "complex" && (
+        <div className="panel">
+          <div className="panel-head"><h4><T en="BOI Tax Segregation & Allocation Engine" th="เครื่องปันส่วนและแยกภาษี BOI" /></h4></div>
+          <div className="panel-body">
+            <BoiToggle />
+            <p className="text-muted" style={{ fontSize: 13, marginTop: 12 }}>
+              <T en="A separate module: one ledger → BOI-01 / BOI-02 / Non-BOI / Shared, then a policy-driven allocation engine, revenue qualification, certificate P&L, BOI loss ledger, and BOI e-Tax + PND50 annex. Off by default. Company ETR stays current tax ÷ PBT." th="โมดูลแยก: บัญชีชุดเดียว → BOI-01 / BOI-02 / นอก BOI / ส่วนร่วม แล้วปันส่วนตามนโยบาย ตรวจรายได้ กำไรรายบัตร ทะเบียนขาดทุน BOI และชุด e-Tax กับเอกสารแนบ ภ.ง.ด.50 ปิดเป็นค่าเริ่มต้น ETR ของบริษัทยังเป็นภาษีงวดปัจจุบัน ÷ กำไรก่อนภาษี" />
+            </p>
+          </div>
+        </div>
+      )}
       <div className="panel">
         <div className="panel-head"><h4><T en="Appearance & language" th="รูปลักษณ์และภาษา" /></h4></div>
         <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 14 }}>

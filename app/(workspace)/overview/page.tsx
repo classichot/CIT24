@@ -33,6 +33,7 @@ export default function OverviewPage() {
         actions={
           <>
             <LawToggle />
+            <Link href="/playbook" className="btn btn-secondary"><T en="Mode playbook" th="คู่มือโหมด" /></Link>
             <Link href="/review" className="btn btn-secondary"><T en="Review queue" th="คิวสอบทาน" /></Link>
             <Link href="/pnd51" className="btn btn-primary"><T en="Open PND51 simulator" th="เปิดแบบจำลอง ภ.ง.ด.51" /></Link>
           </>
@@ -83,7 +84,8 @@ export default function OverviewPage() {
             ))}
           </div>
           <h5 className="sec-h"><T en="Group / client positions" th="สถานะกลุ่ม / ลูกค้า" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th><T en="Entity" th="กิจการ" /></th>
@@ -111,6 +113,7 @@ export default function OverviewPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
         <aside className="col-aside">
           <div>

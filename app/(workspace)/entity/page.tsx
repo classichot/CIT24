@@ -9,7 +9,7 @@ import { F } from "@/lib/format";
 import Link from "next/link";
 
 export default function EntityPage() {
-  const { clientId, losses, provision, whtCredit, locked, lawMode } = useStore();
+  const { clientId, losses, provision, whtCredit, locked, lawMode, boiEnabled } = useStore();
   const c = CLIENTS.find((x) => x.id === clientId) ?? CLIENTS[0];
   const deep = lawMode === "complex";
 
@@ -36,7 +36,7 @@ export default function EntityPage() {
               ...(deep ? [["Pillar Two", "เสาหลักสอง", "Out of scope · no P2 DTA/DTL"] as const] : []),
               ["TAS 12 deferred tax", "ภาษีรอตัดบัญชี ต.บ. 12", provision.tas12.enabled ? "On · live DTA/DTL" : "Off · current tax only"],
               ["PND51 method", "วิธี ภ.ง.ด.51", c.pnd51Method === "67bis2" ? "s.67 bis (2) actual six-month" : "s.67 bis (1) estimated annual"],
-              ["BOI", "BOI", c.boi ? "Promoted project on file" : "Non-BOI · MVP profile"],
+              ["BOI", "BOI", boiEnabled ? "Module on · BOI-01 / BOI-02 / Non-BOI segregation" : (c.boi ? "Promoted project on file" : "Module off · open in Complex mode")],
               ["Functional currency", "สกุลเงินหลัก", "THB"],
               ["Filing PND51", "ยื่น ภ.ง.ด.51", "Within 2 months after first six months"],
               ["Filing PND50", "ยื่น ภ.ง.ด.50", "Within 150 days after year-end"],
@@ -82,7 +82,8 @@ export default function EntityPage() {
       <div className="panel" style={{ marginTop: 16 }}>
         <div className="panel-head"><h4><T en="Enacted tax rates (TAS 12)" th="อัตราภาษีที่ประกาศใช้ (ต.บ. 12)" /></h4></div>
         <div className="panel-body">
-          <table className="table" style={{ fontSize: 13 }}>
+          <div className="table-wrap">
+            <table className="table" style={{ fontSize: 13 }}>
             <thead>
               <tr>
                 <th><T en="Rate" th="อัตรา" /></th>
@@ -107,6 +108,7 @@ export default function EntityPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
       <div className="panel" style={{ marginTop: 16 }}>

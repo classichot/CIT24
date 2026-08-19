@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { T } from "@/lib/i18n";
 import type { LawMode } from "@/lib/model";
@@ -22,6 +23,11 @@ export function LawToggle({ variant = "header" }: { variant?: "header" | "block"
           </label>
         ))}
       </div>
+      {variant === "block" && (
+        <Link href="/playbook" className="text-muted" style={{ fontSize: 11 }}>
+          <T en="Playbook — what differs" th="คู่มือ — สิ่งที่ต่างกัน" zh="手册 — 有何不同" ja="プレイブック — 違い" />
+        </Link>
+      )}
     </div>
   );
 }

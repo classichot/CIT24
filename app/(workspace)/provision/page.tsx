@@ -12,7 +12,7 @@ import { T, pnd } from "@/lib/i18n";
 import { F } from "@/lib/format";
 
 export default function ProvisionPage() {
-  const { flash, lang, provision: p, adjustments, whtUnmatched, tas12Enabled, setTas12Enabled, canMutate, readOnly, lawMode } = useStore();
+  const { flash, lang, provision: p, adjustments, whtUnmatched, tas12Enabled, setTas12Enabled, canMutate, readOnly, lawMode, boiEnabled, boiPnl } = useStore();
   const [basis, setBasis] = useState<"h1" | "fy">("fy");
   const taxable = basis === "h1" ? 35900000 : p.taxableProfit;
   const tax = basis === "h1" ? 7180000 : p.currentTax;
@@ -28,6 +28,13 @@ export default function ProvisionPage() {
   return (
     <div className="provision-page">
       <FlowBar />
+      {boiEnabled && (
+        <div className="callout" style={{ marginBottom: 12 }}>
+          <strong>BOI</strong>{" "}
+          <T en={`Module on. Non-BOI taxable ${F(boiPnl.taxable.NON)} feeds company CIT after certificate exemption. Tax adjustments are allocated by project, not dumped at company level.`} th={`โมดูลเปิด กำไรทางภาษีนอก BOI ${F(boiPnl.taxable.NON)} ส่งเข้าภาษีบริษัทหลังยกเว้นรายบัตร รายการปรับปรุงปันตามโครงการ ไม่กองที่บริษัท`} />
+          {" "}<Link href="/boi/pnl"><T en="Open BOI P&L" th="เปิดกำไร BOI" /> →</Link>
+        </div>
+      )}
       <PageHead
         kickerEn="Continuous close · provision"
         kickerTh="ปิดภาษีต่อเนื่อง · ประมาณการภาษี"
@@ -111,7 +118,8 @@ export default function ProvisionPage() {
         <aside className="col-aside">
           <div>
             <h5 className="sec-h"><T en="Effective tax rate reconciliation" th="การกระทบยอดอัตราภาษีที่แท้จริง" /></h5>
-            <table className="table" style={{ fontSize: 13 }}>
+            <div className="table-wrap">
+              <table className="table" style={{ fontSize: 13 }}>
               <tbody>
                 <tr><td><T en="Tax at statutory 20%" th="ภาษีตามอัตรากฎหมาย 20%" /></td><td className="num">{F(etrRecon.statutory)}</td></tr>
                 <tr><td><T en="Permanent differences × 20%" th="ผลต่างถาวร × 20%" /></td><td className="num">{F(etrRecon.permTax)}</td></tr>
@@ -124,11 +132,13 @@ export default function ProvisionPage() {
                 <tr><td style={{ fontWeight: 800 }}>ETR</td><td className="num" style={{ fontWeight: 800 }}>{(p.etr * 100).toFixed(2)}%</td></tr>
               </tbody>
             </table>
+            </div>
             <div className="text-muted" style={{ fontSize: 11, marginTop: 6 }}><T en="ETR = current tax ÷ PBT. Deferred tax is not in this rate." th="ETR = ภาษีงวดปัจจุบัน ÷ กำไรก่อนภาษี ไม่รวมภาษีรอตัดบัญชี" /></div>
           </div>
           <div>
             <h5 className="sec-h"><T en="Journal entry — draft" th="รายการบัญชี — ฉบับร่าง" /></h5>
-            <table className="table" style={{ fontSize: 12 }}>
+            <div className="table-wrap">
+              <table className="table" style={{ fontSize: 12 }}>
               <thead><tr><th><T en="Account" th="บัญชี" /></th><th className="num">Dr</th><th className="num">Cr</th></tr></thead>
               <tbody>
                 {t.journal.map((r) => (
@@ -145,6 +155,7 @@ export default function ProvisionPage() {
                 </tr>
               </tbody>
             </table>
+            </div>
             <div className="text-muted" style={{ fontSize: 11, marginTop: 6 }}>
               {tas12Enabled
                 ? <T en={`Income tax expense ${F(t.taxExpense)} = current ${F(p.currentTax)} + deferred ${F(t.dtExpense)}. ETR uses current tax only.`} th={`ค่าใช้จ่ายภาษี ${F(t.taxExpense)} = ปัจจุบัน ${F(p.currentTax)} + รอตัดบัญชี ${F(t.dtExpense)} ETR ใช้ภาษีงวดปัจจุบันเท่านั้น`} />
@@ -153,7 +164,8 @@ export default function ProvisionPage() {
           </div>
           <div>
             <h5 className="sec-h" style={{ color: "var(--color-accent)" }}><T en="Three-way reconciliation" th="การกระทบยอดสามทาง" /></h5>
-            <table className="table" style={{ fontSize: 12 }}>
+            <div className="table-wrap">
+              <table className="table" style={{ fontSize: 12 }}>
               <thead><tr><th><T en="Source" th="แหล่ง" /></th><th className="num">THB</th><th className="num">Δ</th></tr></thead>
               <tbody>
                 <tr><td><T en="Provision (this workpaper)" th="ประมาณการภาษี" /></td><td className="num">{F(p.currentTax)}</td><td className="num">—</td></tr>
@@ -162,6 +174,7 @@ export default function ProvisionPage() {
                 <tr><td><T en="Payments & credits evidence" th="หลักฐานการชำระและเครดิต" /></td><td className="num">{F(p.pnd51Credit + p.whtCredit)}</td><td className="num" style={{ color: "var(--color-signal)", fontWeight: 800 }}>{F(whtUnmatched, true)}</td></tr>
               </tbody>
             </table>
+            </div>
             <div className="text-muted" style={{ fontSize: 11, lineHeight: 1.55, marginTop: 8 }}><T en="Difference of THB 86,400 traced to 2 withholding-tax certificates not yet received from customers." th="ผลต่าง 86,400 บาท มาจากหนังสือรับรองภาษีหัก ณ ที่จ่าย 2 ฉบับที่ยังไม่ได้รับจากลูกค้า" /></div>
             <Link href="/evidence" className="btn btn-secondary btn-block"><T en="Request the 2 certificates" th="ขอหนังสือรับรอง 2 ฉบับ" /></Link>
           </div>
