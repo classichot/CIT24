@@ -229,7 +229,7 @@ export default function DeferredPage() {
 
           <h5 className="sec-h" style={{ marginTop: 18 }}><T en="Reversal Guardian" th="ผู้เฝ้าระวังการกลับรายการ" /></h5>
           {reversals.map((r) => (
-            <div key={r.id} style={{ padding: "10px 0", borderBottom: "1px solid var(--color-divider)" }}>
+            <div key={r.id} className="stack-row">
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <span style={{ fontWeight: 600, fontSize: 13 }}>{r.name}</span>
                 <span className={statusCls(r.status)}>{r.status}</span>
@@ -265,7 +265,7 @@ export default function DeferredPage() {
           )}
           <h5 className="sec-h" style={{ marginTop: 18 }}><T en="Reversal Guardian" th="ผู้เฝ้าระวังการกลับรายการ" /></h5>
           {reversals.map((r) => (
-            <div key={r.id} style={{ padding: "10px 0", borderBottom: "1px solid var(--color-divider)" }}>
+            <div key={r.id} className="stack-row">
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <span style={{ fontWeight: 600, fontSize: 13 }}>{r.name}</span>
                 <span className={statusCls(r.status)}>{r.status}</span>

@@ -74,7 +74,7 @@ export default function LedgerPage() {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 0", borderBottom: "1px solid var(--color-divider)", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 0", borderBottom: "2px solid var(--color-divider)", flexWrap: "wrap" }}>
         <div className="seg">
           {([["all", "All", "ทั้งหมด"], ["P", "Permanent", "ถาวร"], ["T", "Temporary", "ชั่วคราว"], ["rev", "Reversals", "กลับรายการ"], ["query", "Open queries", "ข้อสอบถาม"]] as const).map(([k, en, th]) => (
             <label key={k} className="seg-opt">
@@ -198,7 +198,7 @@ export default function LedgerPage() {
             <div style={{ marginTop: 12 }}>
               <div className="text-muted" style={{ fontSize: 11 }}><T en="Versions (never overwritten)" th="เวอร์ชัน (ไม่ถูกเขียนทับ)" /></div>
               {hist.map((v) => (
-                <div key={`${v.adjId}-${v.version}`} style={{ fontSize: 12, padding: "6px 0", borderBottom: "1px solid var(--color-divider)" }}>
+                <div key={`${v.adjId}-${v.version}`} className="stack-row" style={{ fontSize: 12 }}>
                   v{v.version} · {v.oldStatus} → {v.newStatus} · {v.who} · {v.when}
                 </div>
               ))}

@@ -170,7 +170,7 @@ function CorpusPage() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "1px solid var(--color-divider)", flexWrap: "wrap", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "2px solid var(--color-divider)", flexWrap: "wrap", alignItems: "center" }}>
         <input className="input" style={{ maxWidth: 280 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder={pick(lang, { en: "Search cite, title…", th: "ค้นหาเลข ชื่อ…", zh: "搜索文号、标题…", ja: "引用・名称を検索…" })} />
         <div className="seg">
           {(lawMode === "complex" ? (["all", "in-force", "obsolete"] as StatusFilter[]) : (["all", "in-force"] as StatusFilter[])).map((k) => (

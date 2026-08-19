@@ -103,7 +103,7 @@ export default function ClientsPage() {
             <h5 className="sec-h"><T en="AI evidence engine" th="เครื่องมือ AI ด้านหลักฐาน" /></h5>
             <div style={{ borderTop: "2px solid var(--color-divider)", fontSize: 12 }}>
               {FEED.map((fd) => (
-                <button key={fd.text} onClick={() => ask(fd.text)} style={{ display: "flex", gap: 8, width: "100%", textAlign: "left", padding: "9px 0", border: 0, borderBottom: "1px solid var(--color-divider)", background: "transparent", cursor: "pointer", font: "inherit", color: "inherit" }}>
+                <button key={fd.text} className="stack-row" onClick={() => ask(fd.text)}>
                   <div style={{ width: 4, flex: "none", background: fd.color }} />
                   <div>
                     <div>{fd.text}</div>

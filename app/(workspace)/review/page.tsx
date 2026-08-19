@@ -34,7 +34,7 @@ export default function ReviewPage() {
         }
       />
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "12px 0", borderBottom: "1px solid var(--color-divider)", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "12px 0", borderBottom: "2px solid var(--color-divider)", flexWrap: "wrap" }}>
         <div>
           <div className="stat-label"><T en="Materiality" th="นัยสำคัญ" /></div>
           <strong>{F(materiality)}</strong>
@@ -130,7 +130,7 @@ export default function ReviewPage() {
               <T en="Each row hashes the previous hash + actor + action. Rows cannot be edited." th="แต่ละแถวแฮชค่าแฮชก่อนหน้า + ผู้กระทำ + การกระทำ แก้แถวไม่ได้" />
             </div>
             {log.map((l) => (
-              <div key={l.hash + l.when} style={{ padding: "10px 0", borderBottom: "1px solid var(--color-divider)", fontSize: 12 }}>
+              <div key={l.hash + l.when} className="stack-row" style={{ fontSize: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                   <span style={{ fontWeight: 600 }}>{l.who}</span>
                   <span className="mono text-muted">{l.hash}</span>

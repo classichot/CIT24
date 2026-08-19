@@ -225,7 +225,7 @@ export default function DataPage() {
           </div>
           <div style={{ borderTop: "2px solid var(--color-divider)" }}>
             {unmapped.map((u) => (
-              <div key={u.code} style={{ padding: "12px 0", borderBottom: "1px solid var(--color-divider)" }}>
+              <div key={u.code} className="stack-row">
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
                   <div style={{ fontWeight: 800, fontSize: 13 }}>{u.code}</div>
                   <span className="tag tag-neutral">{u.tag}</span>

@@ -86,7 +86,7 @@ export default function MappingPage() {
             <div className="text-muted" style={{ fontSize: 13, marginBottom: 12 }}><T en="All flagged accounts are classified." th="บัญชีที่ทำเครื่องหมายถูกจัดประเภทครบแล้ว" /></div>
           )}
           {unmapped.map((u) => (
-            <div key={u.code} style={{ padding: "12px 0", borderBottom: "1px solid var(--color-divider)" }}>
+            <div key={u.code} className="stack-row">
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <div>
                   <div style={{ fontWeight: 800 }}>{u.code}</div>
@@ -136,7 +136,7 @@ export default function MappingPage() {
           <h5 className="sec-h"><T en="Mapping history" th="ประวัติการจับคู่" /></h5>
           {mappingHistory.length === 0 && <div className="text-muted" style={{ fontSize: 12 }}><T en="Accept or retag an account to write the first history row." th="ยอมรับหรือเปลี่ยนประเภทเพื่อบันทึกประวัติแถวแรก" /></div>}
           {mappingHistory.map((h, i) => (
-            <div key={`${h.code}-${i}`} style={{ padding: "8px 0", borderBottom: "1px solid var(--color-divider)", fontSize: 12 }}>
+            <div key={`${h.code}-${i}`} className="stack-row" style={{ fontSize: 12 }}>
               <div style={{ fontWeight: 600 }}>{h.code} · {h.action}</div>
               <div className="text-muted">{h.who} · {h.when}</div>
             </div>

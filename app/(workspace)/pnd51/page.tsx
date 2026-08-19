@@ -181,7 +181,7 @@ export default function Pnd51Page() {
                 ["c", "Order-book / seasonality analysis", "การวิเคราะห์คำสั่งซื้อและฤดูกาล", "Missing — needed for the H2 growth assumption", "ยังไม่มี — จำเป็นต่อข้อสมมติการเติบโตครึ่งปีหลัง"],
                 ["d", "Management sign-off on assumptions", "การลงนามรับรองข้อสมมติ", "Pending CFO signature", "รอ CFO ลงนาม"],
               ] as const).map(([k, en, th, men, mth]) => (
-                <label key={k} style={{ display: "flex", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--color-divider)", cursor: "pointer", alignItems: "flex-start" }}>
+                <label key={k} className="stack-row" style={{ display: "flex", gap: 10, cursor: "pointer", alignItems: "flex-start" }}>
                   <input type="checkbox" checked={evid[k]} onChange={() => toggleEv(k)} style={{ accentColor: "var(--color-accent)", marginTop: 2 }} />
                   <span style={{ fontSize: 12, lineHeight: 1.5 }}>
                     <strong><T en={en} th={th} /></strong><br />

@@ -120,7 +120,7 @@ export default function OverviewPage() {
             <h5 className="sec-h" style={{ color: "var(--color-accent)" }}><T en="Reversal Guardian" th="ผู้เฝ้าระวังการกลับรายการ" /></h5>
             <div style={{ borderTop: "2px solid var(--color-divider)" }}>
               {reversals.map((r) => (
-                <div key={r.id} style={{ padding: "10px 0", borderBottom: "1px solid var(--color-divider)" }}>
+                <div key={r.id} className="stack-row">
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                     <span style={{ fontWeight: 600, fontSize: 13 }}>{r.name}</span>
                     <span className={r.status === "Action needed" ? "tag tag-outline" : r.status === "Scheduled" ? "tag tag-accent" : "tag tag-neutral"}>{r.status}</span>
@@ -135,7 +135,7 @@ export default function OverviewPage() {
             <h5 className="sec-h"><T en="AI evidence engine" th="เครื่องมือ AI ด้านหลักฐาน" /></h5>
             <div style={{ borderTop: "2px solid var(--color-divider)", fontSize: 12 }}>
               {FEED.map((fd) => (
-                <button key={fd.text} onClick={() => ask(fd.text)} style={{ display: "flex", gap: 8, width: "100%", textAlign: "left", padding: "9px 0", border: 0, borderBottom: "1px solid var(--color-divider)", background: "transparent", cursor: "pointer", font: "inherit", color: "inherit" }}>
+                <button key={fd.text} className="stack-row" onClick={() => ask(fd.text)}>
                   <div style={{ width: 4, flex: "none", background: fd.color }} />
                   <div>
                     <div>{fd.text}</div>

@@ -73,7 +73,7 @@ export default function RulesPage() {
 
       <LawAlertStrip />
 
-      <div style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "1px solid var(--color-divider)", flexWrap: "wrap", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "2px solid var(--color-divider)", flexWrap: "wrap", alignItems: "center" }}>
         <input className="input" style={{ maxWidth: 320 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder={pick(lang, { en: "Search id, section, name…", th: "ค้นหารหัส มาตรา ชื่อ…", zh: "搜索编号、条文、名称…", ja: "ID・条文・名称を検索…" })} />
         <div className="seg" style={{ flexWrap: "wrap" }}>
           <label className="seg-opt">

@@ -108,7 +108,7 @@ export default function Pnd50Page() {
             <h5 className="sec-h"><T en="Completeness checklist" th="รายการตรวจสอบความครบถ้วน" /> · {done}/5</h5>
             <div className="bar-track" style={{ marginBottom: 12 }}><div className="bar-fill" style={{ width: `${done / 5 * 100}%` }} /></div>
             {checks.map(([k, on, en, th, meta]) => (
-              <div key={k} className="radio" style={{ padding: "8px 0", borderBottom: "1px solid var(--color-divider)", display: "flex", gap: 8, alignItems: "flex-start" }}>
+              <div key={k} className="radio stack-row">
                 <span className={on ? "tag tag-neutral" : "tag tag-outline"}>{on ? "OK" : "Open"}</span>
                 <span style={{ fontSize: 13 }}>
                   <T en={en} th={th} />
