@@ -11,6 +11,7 @@ import { F } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import { LawAlertBanner } from "@/components/LawReview";
 import { LawToggle } from "@/components/LawToggle";
+import { StartEngage } from "@/components/StartEngage";
 
 export default function OverviewPage() {
   const { mode, ask, lang, provision: p, reversals, lawMode, clients, clientId, setClientId } = useStore();
@@ -33,7 +34,7 @@ export default function OverviewPage() {
         actions={
           <>
             <LawToggle />
-            <Link href="/onboard" className="btn btn-secondary"><T en="Add engagement" th="เพิ่มงาน" /></Link>
+            <StartEngage />
             <Link href="/boi" className="btn btn-secondary"><T en="BOI desk" th="โต๊ะ BOI" /></Link>
             <Link href="/playbook" className="btn btn-secondary"><T en="Mode playbook" th="คู่มือโหมด" /></Link>
             <Link href="/review" className="btn btn-secondary"><T en="Review queue" th="คิวสอบทาน" /></Link>

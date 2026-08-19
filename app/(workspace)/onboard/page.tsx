@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { EMPTY_DRAFT, ONBOARD_STEPS, PACK_DOCS, tinOk, type EngagementDraft } from "@/lib/onboard";
 import { useStore } from "@/lib/store";
 import { PageHead } from "@/components/PageHead";
+import { StartEngage } from "@/components/StartEngage";
 import { T } from "@/lib/i18n";
 
 export default function OnboardPage() {
@@ -48,7 +49,7 @@ export default function OnboardPage() {
         actions={
           <>
             <Link href="/clients" className="btn btn-secondary"><T en="Portfolio" th="พอร์ตลูกค้า" /></Link>
-            <button className="btn btn-primary" onClick={submit}><T en="Create engagement" th="สร้างงานบริการ" /></button>
+            <StartEngage kind="create" onClick={submit} />
           </>
         }
       />
@@ -147,9 +148,7 @@ export default function OnboardPage() {
               <input className="input" value={draft.cfo} onChange={(e) => set("cfo", e.target.value)} placeholder="Pornthip R." />
             </label>
           </div>
-          <button className="btn btn-primary btn-block" style={{ marginTop: 16 }} onClick={submit}>
-            <T en="Create engagement and open Data & mapping" th="สร้างงานแล้วไปข้อมูลและการจับคู่" />
-          </button>
+          <StartEngage kind="create" block onClick={submit} />
         </section>
 
         <aside className="col-aside">

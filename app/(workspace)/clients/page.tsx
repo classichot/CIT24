@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FEED } from "@/lib/model";
 import { useStore } from "@/lib/store";
 import { PageHead, riskCls } from "@/components/PageHead";
+import { StartEngage } from "@/components/StartEngage";
 import { T, pnd } from "@/lib/i18n";
 import { F } from "@/lib/format";
 
@@ -23,7 +24,7 @@ export default function ClientsPage() {
         actions={
           <>
             <button className="btn btn-secondary" onClick={() => router.push("/review")}><T en="Reviewer workload" th="ภาระงานผู้สอบทาน" /></button>
-            <button className="btn btn-primary" onClick={() => router.push("/onboard")}><T en="Add engagement" th="เพิ่มงานบริการ" /></button>
+            <StartEngage />
           </>
         }
       />

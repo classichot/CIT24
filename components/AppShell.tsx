@@ -25,7 +25,6 @@ import {
   Sparkles,
   Timer,
   Upload,
-  UserPlus,
   X,
 } from "lucide-react";
 import { ADVISOR_USER, CORPORATE_USER, DEFENCE_USER, type Lang } from "@/lib/model";
@@ -36,14 +35,13 @@ import { LawToggle } from "@/components/LawToggle";
 import { BoiToggle } from "@/components/BoiToggle";
 import { Copilot } from "@/components/Copilot";
 import { AuditTrail } from "@/components/AuditTrail";
-import { pick, T } from "@/lib/i18n";
+import { StartEngage } from "@/components/StartEngage";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 
 const NAV = [
   { group: "Workspace", groupTh: "พื้นที่ทำงาน", groupZh: "工作区", groupJa: "ワークスペース", items: [
     { href: "/clients", en: "Client portfolio", th: "พอร์ตลูกค้า", zh: "客户组合", ja: "顧客ポートフォリオ", icon: Building2, advisor: true },
-    { href: "/onboard", en: "New engagement", th: "งานใหม่", zh: "新委托", ja: "新規案件", icon: UserPlus },
     { href: "/overview", en: "Tax close", th: "ปิดภาษี", zh: "税务关账", ja: "税務クローズ", icon: LayoutGrid },
     { href: "/entity", en: "Entity profile", th: "โปรไฟล์กิจการ", zh: "主体档案", ja: "事業体プロファイル", icon: Building2 },
   ]},
@@ -163,6 +161,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 13 }}>{lang === "th" ? client.nameTh : client.name}</div>
           <div style={{ fontSize: 11, color: "var(--color-neutral-600)", marginTop: 2 }}>TIN {client.tin} · {client.period}</div>
         </Link>
+        <div className="sidebar-start">
+          <div className="sidebar-start-kicker"><T en="Start here" th="เริ่มที่นี่" zh="从这里开始" ja="ここから開始" /></div>
+          <StartEngage block />
+        </div>
         <div className="sidebar-law">
           <LawToggle variant="block" />
           <div style={{ marginTop: 10 }}><BoiToggle variant="block" /></div>
@@ -232,6 +234,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <AlertTriangle size={13} />
             {lang === "th" ? "ภ.ง.ด.51" : "PND51"} · {loc(lang, "due 31 Aug 2026 · 13 days", "ครบ 31 ส.ค. 2569 · 13 วัน", "截止 2026年8月31日 · 13天", "期限 2026年8月31日 · 13日")}
           </div>
+          <StartEngage />
           <LawToggle />
           <BoiToggle />
           <LangToggle />
