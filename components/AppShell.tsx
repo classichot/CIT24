@@ -59,7 +59,7 @@ const NAV = [
     { href: "/deferred", en: "Deferred tax", th: "ภาษีรอตัดบัญชี", zh: "递延所得税", ja: "繰延税金", icon: Timer },
     { href: "/disclosure", en: "TAS 12 disclosure", th: "หมายเหตุ ต.บ. 12", zh: "TAS 12 附注", ja: "TAS 12注記", icon: FileText },
   ]},
-  { group: "BOI", groupTh: "BOI", groupZh: "BOI", groupJa: "BOI", complex: true, boi: true, items: [
+  { group: "BOI", groupTh: "BOI", groupZh: "BOI", groupJa: "BOI", items: [
     { href: "/boi", en: "BOI desk", th: "โต๊ะ BOI", zh: "BOI 工作台", ja: "BOIデスク", icon: Award },
     { href: "/boi/certificates", en: "Certificates", th: "บัตรส่งเสริม", zh: "促进证书", ja: "促進証書", icon: FileText },
     { href: "/boi/allocation", en: "Allocation AI", th: "ปันส่วน AI", zh: "分摊 AI", ja: "配賦AI", icon: Sparkles },
@@ -162,12 +162,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Link>
         <div className="sidebar-law">
           <LawToggle variant="block" />
-          {lawMode === "complex" && <div style={{ marginTop: 10 }}><BoiToggle variant="block" /></div>}
+          <div style={{ marginTop: 10 }}><BoiToggle variant="block" /></div>
         </div>
         <nav style={{ flex: 1, overflow: "auto", padding: "10px 8px" }}>
           {NAV.map((g) => {
-            if ("complex" in g && g.complex && lawMode !== "complex") return null;
-            if ("boi" in g && g.boi && !boiEnabled) return null;
             const items = g.items.filter((i) => !("advisor" in i && i.advisor) || mode === "advisor");
             if (!items.length) return null;
             return (
@@ -180,6 +178,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <Icon size={15} />
                       <span style={{ flex: 1 }}>{loc(lang, item.en, item.th, item.zh, item.ja)}</span>
                       {item.href === "/ledger" && <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.7 }}>{adjustments.length}</span>}
+                      {item.href === "/boi" && !boiEnabled && <span className="tag tag-neutral" style={{ fontSize: 9, padding: "1px 6px" }}><T en="Off" th="ปิด" zh="关" ja="オフ" /></span>}
                       {"hot" in item && Boolean((item as { hot?: boolean }).hot) && <span style={{ width: 6, height: 6, background: "var(--color-accent)", flex: "none" }} />}
                     </Link>
                   );
@@ -231,7 +230,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {lang === "th" ? "ภ.ง.ด.51" : "PND51"} · {loc(lang, "due 31 Aug 2026 · 13 days", "ครบ 31 ส.ค. 2569 · 13 วัน", "截止 2026年8月31日 · 13天", "期限 2026年8月31日 · 13日")}
           </div>
           <LawToggle />
-          {lawMode === "complex" && <BoiToggle />}
+          <BoiToggle />
           <LangToggle />
           <ModeToggle compact />
           <button className="btn btn-secondary header-hide-sm" onClick={() => setCopilotOpen(!copilotOpen)}><MessageSquare size={16} /><T en="Ask CIT24" th="ถาม CIT24" zh="询问 CIT24" ja="CIT24に質問" /></button>

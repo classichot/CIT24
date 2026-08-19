@@ -36,13 +36,22 @@ export default function EntityPage() {
               ...(deep ? [["Pillar Two", "เสาหลักสอง", "Out of scope · no P2 DTA/DTL"] as const] : []),
               ["TAS 12 deferred tax", "ภาษีรอตัดบัญชี ต.บ. 12", provision.tas12.enabled ? "On · live DTA/DTL" : "Off · current tax only"],
               ["PND51 method", "วิธี ภ.ง.ด.51", c.pnd51Method === "67bis2" ? "s.67 bis (2) actual six-month" : "s.67 bis (1) estimated annual"],
-              ["BOI", "BOI", boiEnabled ? "Module on · BOI-01 / BOI-02 / Non-BOI segregation" : (c.boi ? "Promoted project on file" : "Module off · open in Complex mode")],
               ["Functional currency", "สกุลเงินหลัก", "THB"],
               ["Filing PND51", "ยื่น ภ.ง.ด.51", "Within 2 months after first six months"],
               ["Filing PND50", "ยื่น ภ.ง.ด.50", "Within 150 days after year-end"],
             ].map(([en, th, v]) => (
               <div key={en} className="wf-row"><span><T en={en} th={th} /></span><span>{v}</span></div>
             ))}
+            <div className="wf-row">
+              <span>BOI</span>
+              <span>
+                <Link href="/boi">
+                  {boiEnabled
+                    ? <T en="Module on · open desk" th="โมดูลเปิด · เปิดโต๊ะ" />
+                    : <T en="Off — open BOI desk to turn on" th="ปิด — เปิดโต๊ะ BOI เพื่อเปิดโมดูล" />}
+                </Link>
+              </span>
+            </div>
           </div>
         </div>
         <div className="panel">

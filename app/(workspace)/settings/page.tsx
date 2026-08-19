@@ -52,17 +52,16 @@ export default function SettingsPage() {
           </p>
         </div>
       </div>
-      {lawMode === "complex" && (
-        <div className="panel">
-          <div className="panel-head"><h4><T en="BOI Tax Segregation & Allocation Engine" th="เครื่องปันส่วนและแยกภาษี BOI" /></h4></div>
-          <div className="panel-body">
-            <BoiToggle />
-            <p className="text-muted" style={{ fontSize: 13, marginTop: 12 }}>
-              <T en="A separate module: one ledger → BOI-01 / BOI-02 / Non-BOI / Shared, then a policy-driven allocation engine, revenue qualification, certificate P&L, BOI loss ledger, and BOI e-Tax + PND50 annex. Off by default. Company ETR stays current tax ÷ PBT." th="โมดูลแยก: บัญชีชุดเดียว → BOI-01 / BOI-02 / นอก BOI / ส่วนร่วม แล้วปันส่วนตามนโยบาย ตรวจรายได้ กำไรรายบัตร ทะเบียนขาดทุน BOI และชุด e-Tax กับเอกสารแนบ ภ.ง.ด.50 ปิดเป็นค่าเริ่มต้น ETR ของบริษัทยังเป็นภาษีงวดปัจจุบัน ÷ กำไรก่อนภาษี" />
-            </p>
-          </div>
+      <div className="panel">
+        <div className="panel-head"><h4><T en="BOI Tax Segregation & Allocation Engine" th="เครื่องปันส่วนและแยกภาษี BOI" /></h4></div>
+        <div className="panel-body">
+          <BoiToggle />
+          <p className="text-muted" style={{ fontSize: 13, marginTop: 12 }}>
+            <T en="A separate module in the left sidebar under BOI. One ledger → BOI-01 / BOI-02 / Non-BOI / Shared, then allocation, revenue qualification, certificate P&L, BOI losses, and e-Tax + PND50 annex. Turning it on also switches Law depth to Complex. Company ETR stays current tax ÷ PBT." th="โมดูลแยกในแถบซ้ายหัวข้อ BOI บัญชีชุดเดียว → BOI-01 / BOI-02 / นอก BOI / ส่วนร่วม แล้วปันส่วน ตรวจรายได้ กำไรรายบัตร ขาดทุน BOI และชุด e-Tax กับเอกสารแนบ ภ.ง.ด.50 การเปิดจะสลับเป็นครบทุกกฎหมายด้วย ETR ของบริษัทยังเป็นภาษีงวดปัจจุบัน ÷ กำไรก่อนภาษี" />
+          </p>
+          <Link href="/boi" className="btn btn-secondary" style={{ marginTop: 12 }}><T en="Open BOI desk" th="เปิดโต๊ะ BOI" /> →</Link>
         </div>
-      )}
+      </div>
       <div className="panel">
         <div className="panel-head"><h4><T en="Appearance & language" th="รูปลักษณ์และภาษา" /></h4></div>
         <div className="panel-body" style={{ display: "flex", flexDirection: "column", gap: 14 }}>

@@ -868,13 +868,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setBoiEnabled = useCallback((on: boolean) => {
-    if (on && lawMode !== "complex") {
-      flash("Switch Law depth to Complex before opening the BOI module");
-      return;
-    }
     if (readOnly) {
       flash("Audit-defence mode is read-only");
       return;
+    }
+    if (on && lawMode !== "complex") {
+      setLawMode("complex");
     }
     setBoiEnabledState(on);
     localStorage.setItem("cit24_boi", on ? "1" : "0");
@@ -882,9 +881,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ? "BOI Tax Segregation & Allocation Engine opened — certificate-level tax ledger"
       : "BOI module closed");
     flash(on
-      ? "BOI module on. Ledger is classified BOI-01 / BOI-02 / Non-BOI / Shared. ETR stays current tax ÷ PBT."
+      ? lawMode === "complex"
+        ? "BOI module on. Ledger is classified BOI-01 / BOI-02 / Non-BOI / Shared. ETR stays current tax ÷ PBT."
+        : "Complex mode · BOI module on. Open BOI desk in the sidebar."
       : "BOI module off.");
-  }, [lawMode, readOnly, flash, logEvent]);
+  }, [lawMode, readOnly, flash, logEvent, setLawMode]);
 
   const setRentDriver = useCallback((d: AllocDriver) => {
     setRentDriverState(d);
