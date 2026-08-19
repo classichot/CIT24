@@ -36,6 +36,7 @@ import { BoiToggle } from "@/components/BoiToggle";
 import { Copilot } from "@/components/Copilot";
 import { AuditTrail } from "@/components/AuditTrail";
 import { StartEngage } from "@/components/StartEngage";
+import { pick, T } from "@/lib/i18n";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 
