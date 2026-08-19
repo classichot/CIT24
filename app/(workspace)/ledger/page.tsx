@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { DOCS, GL_DETAIL } from "@/lib/model";
-import { liveAdjustments, traceAdjustment } from "@/lib/engine";
+import { GL_DETAIL } from "@/lib/model";
+import { traceAdjustment } from "@/lib/engine";
+import { evidenceCoverage, fileFingerprint } from "@/lib/close";
 import { useStore } from "@/lib/store";
 import { PageHead, ptCls, riskColor, statusCls } from "@/components/PageHead";
 import { FlowBar } from "@/components/FlowBar";
@@ -12,12 +13,15 @@ import { T } from "@/lib/i18n";
 import { F } from "@/lib/format";
 
 export default function LedgerPage() {
-  const { statusOverride, setStatus, flash, lang, ask } = useStore();
+  const {
+    adjustments, setStatus, flash, lang, ask, locked, canMutate, files, evidence, linkEvidence,
+    versions, runDetection, detections, acceptDetection, extraAdjs, importPriorYear, priorImported,
+  } = useStore();
   const [filter, setFilter] = useState<"all" | "P" | "T" | "rev" | "query">("all");
   const [q, setQ] = useState("");
   const [sel, setSel] = useState("ADJ-2026-0041");
 
-  const all = liveAdjustments(statusOverride);
+  const all = adjustments;
   const rows = useMemo(() => all.filter((r) => {
     const okF = filter === "all" ? true : filter === "rev" ? r.adjAmt < 0 : filter === "query" ? r.status === "Query" : r.pt === filter;
     const qq = q.toLowerCase();
@@ -28,6 +32,9 @@ export default function LedgerPage() {
   const addb = rows.filter((r) => r.adjAmt > 0).reduce((s, r) => s + r.adjAmt, 0);
   const dedu = rows.filter((r) => r.adjAmt < 0).reduce((s, r) => s + r.adjAmt, 0);
   const row = all.find((r) => r.id === sel) ?? all[0];
+  const cov = evidenceCoverage(all, evidence);
+  const linked = evidence[row.id] ?? [];
+  const hist = versions.filter((v) => v.adjId === row.id);
 
   return (
     <div>
@@ -37,15 +44,35 @@ export default function LedgerPage() {
         kickerTh="ศูนย์ควบคุม · ทุกจำนวนตรวจสอบย้อนกลับได้"
         titleEn="Tax Adjustment Ledger"
         titleTh="ทะเบียนรายการปรับปรุงภาษี"
-        subEn={`FY2026 · showing ${rows.length} of ${all.length} adjustments · approved records are versioned, never overwritten`}
-        subTh={`ปี 2569 · แสดง ${rows.length} จาก ${all.length} รายการ · รายการที่อนุมัติจะถูกเก็บเป็นเวอร์ชัน ไม่ถูกเขียนทับ`}
+        subEn={`FY2026 · ${rows.length} of ${all.length} · evidence ${cov.linked}/${cov.need} material items · ${extraAdjs.length} session postings`}
+        subTh={`ปี 2569 · ${rows.length} จาก ${all.length} · หลักฐาน ${cov.linked}/${cov.need} รายการสาระ · ${extraAdjs.length} รายการในรอบนี้`}
+        subZh={`FY2026 · ${rows.length} / ${all.length} · 证据 ${cov.linked}/${cov.need} · 本会话过账 ${extraAdjs.length}`}
+        subJa={`FY2026 · ${rows.length} / ${all.length} · 証憑 ${cov.linked}/${cov.need} · セッション転記 ${extraAdjs.length}`}
         actions={
           <>
-            <button className="btn btn-secondary" onClick={() => flash("FY2025 ledger imported — 12 positions linked into Corporate Tax Memory")}><T en="Import prior year" th="นำเข้าข้อมูลปีก่อน" /></button>
-            <button className="btn btn-primary" onClick={() => flash("New adjustment draft created — engine will not post until approved")}><T en="New adjustment" th="สร้างรายการใหม่" /></button>
+            <button className="btn btn-secondary" onClick={importPriorYear} disabled={!canMutate || priorImported}>
+              {priorImported
+                ? <T en="FY2025 imported" th="นำเข้าปี 2568 แล้ว" zh="已导入 FY2025" ja="FY2025取込済" />
+                : <T en="Import prior year" th="นำเข้าข้อมูลปีก่อน" zh="导入上年" ja="前年を取込" />}
+            </button>
+            <button className="btn btn-secondary" onClick={runDetection} disabled={!canMutate}><T en="Run AI detection" th="ให้ AI ตรวจหารายการ" /></button>
+            <button className="btn btn-primary" onClick={() => flash("New drafts come from AI detection or Reversal Guardian — the engine will not post until approved")} disabled={!canMutate}><T en="New adjustment" th="สร้างรายการใหม่" /></button>
           </>
         }
       />
+
+      {detections.length > 0 && (
+        <div className="callout" style={{ fontSize: 13, marginBottom: 8 }}>
+          {detections.map((d) => (
+            <div key={d.id} style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap", marginTop: 4 }}>
+              <span className="mono" style={{ fontWeight: 800 }}>{d.id}</span>
+              <span>{lang === "th" ? d.nameTh : d.name}</span>
+              <span className="num">{F(d.adjAmt)}</span>
+              <button className="btn btn-primary" style={{ fontSize: 12, padding: "4px 8px" }} onClick={() => { acceptDetection(d.id); setSel(d.id); }}><T en="Post to ledger" th="บันทึกเข้าทะเบียน" /></button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 0", borderBottom: "1px solid var(--color-divider)", flexWrap: "wrap" }}>
         <div className="seg">
@@ -60,7 +87,7 @@ export default function LedgerPage() {
         <div style={{ marginLeft: "auto", display: "flex", gap: 18 }}>
           <div><div className="stat-label"><T en="Add-backs" th="บวกกลับ" /></div><div style={{ fontWeight: 800 }}>{F(addb)}</div></div>
           <div><div className="stat-label"><T en="Deductions" th="หักออก" /></div><div style={{ fontWeight: 800, color: "var(--color-accent-700)" }}>{F(dedu)}</div></div>
-          <div><div className="stat-label"><T en="Net · tax at 20%" th="สุทธิ · ภาษี 20%" /></div><div style={{ fontWeight: 800 }}>{F(addb + dedu)} · {F(Math.round((addb + dedu) * 0.2))}</div></div>
+          <div><div className="stat-label"><T en="Evidence coverage" th="ความครอบคลุมหลักฐาน" /></div><div style={{ fontWeight: 800 }}>{cov.pct}%</div></div>
         </div>
       </div>
 
@@ -76,7 +103,7 @@ export default function LedgerPage() {
                 <th className="num"><T en="Add / (deduct)" th="บวก / (หัก)" /></th>
                 <th>P/T</th>
                 <th><T en="Origin" th="ที่มา" /></th>
-                <th className="num"><T en="Conf." th="ความเชื่อมั่น" /></th>
+                <th><T en="Evidence" th="หลักฐาน" /></th>
                 <th><T en="Status" th="สถานะ" /></th>
                 <th style={{ width: 34 }} />
               </tr>
@@ -99,7 +126,7 @@ export default function LedgerPage() {
                   </td>
                   <td><span className={ptCls(lr.pt)}>{lr.pt}</span></td>
                   <td style={{ fontSize: 11 }}>{lr.origin}</td>
-                  <td className="num" style={{ fontSize: 12 }}>{lr.conf === 1 ? "—" : lr.conf.toFixed(2)}</td>
+                  <td style={{ fontSize: 11 }}>{(evidence[lr.id] ?? []).length || "—"}</td>
                   <td><span className={statusCls(lr.status)}>{lr.status}</span></td>
                   <td>
                     <button className="btn btn-ghost" style={{ padding: 2 }} onClick={(e) => { e.stopPropagation(); setSel(lr.id); }} aria-label="Trace">
@@ -137,10 +164,47 @@ export default function LedgerPage() {
               <div key={g[0]} className="wf-row"><span>{g[0]}</span><span>{g[1]}</span></div>
             ))}
           </div>
-          <div className="text-muted" style={{ fontSize: 12 }}>{(DOCS[row.id] ?? ["EVIDENCE pack", "OCR TH/EN"])[0]} · {(DOCS[row.id] ?? ["", ""])[1]}</div>
+          <div style={{ marginTop: 12 }}>
+            <div className="text-muted" style={{ fontSize: 11 }}><T en="Evidence workpapers" th="กระดาษทำการหลักฐาน" /></div>
+            {linked.length === 0 && <div className="text-muted" style={{ fontSize: 12 }}><T en="No document linked yet." th="ยังไม่มีเอกสารที่เชื่อม" /></div>}
+            {linked.map((id) => {
+              const f = files.find((x) => x.id === id);
+              return (
+                <div key={id} className="wf-row" style={{ fontSize: 12 }}>
+                  <span>{f?.name ?? id}</span>
+                  <span className="mono text-muted">{fileFingerprint(f?.name ?? id, f?.size ?? "", f?.conf ?? 0)}</span>
+                </div>
+              );
+            })}
+            <select
+              className="input"
+              style={{ marginTop: 8 }}
+              disabled={!canMutate}
+              defaultValue=""
+              onChange={(e) => {
+                if (e.target.value) linkEvidence(row.id, e.target.value);
+                e.target.value = "";
+              }}
+            >
+              <option value=""><T en="Link a file from the pack…" th="เชื่อมไฟล์จากชุดเอกสาร…" /></option>
+              {files.filter((f) => !linked.includes(f.id)).map((f) => (
+                <option key={f.id} value={f.id}>{f.name}</option>
+              ))}
+            </select>
+          </div>
+          {hist.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <div className="text-muted" style={{ fontSize: 11 }}><T en="Versions (never overwritten)" th="เวอร์ชัน (ไม่ถูกเขียนทับ)" /></div>
+              {hist.map((v) => (
+                <div key={`${v.adjId}-${v.version}`} style={{ fontSize: 12, padding: "6px 0", borderBottom: "1px solid var(--color-divider)" }}>
+                  v{v.version} · {v.oldStatus} → {v.newStatus} · {v.who} · {v.when}
+                </div>
+              ))}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-            <button className="btn btn-primary" onClick={() => { setStatus(row.id, "Approved"); flash(`${row.id} approved — version 2 written, prior version retained`); }}><T en="Approve" th="อนุมัติ" /></button>
-            <button className="btn btn-secondary" onClick={() => { setStatus(row.id, "Query"); flash(`Review query raised on ${row.id} — evidence requested from client`); }}><T en="Raise query" th="ตั้งข้อสอบถาม" /></button>
+            <button className="btn btn-primary" disabled={!canMutate} onClick={() => setStatus(row.id, "Approved")}>{locked ? <T en="Locked" th="ล็อกแล้ว" /> : <T en="Approve" th="อนุมัติ" />}</button>
+            <button className="btn btn-secondary" disabled={!canMutate} onClick={() => setStatus(row.id, "Query")}><T en="Raise query" th="ตั้งข้อสอบถาม" /></button>
             <button className="btn btn-ghost" onClick={() => ask(`Explain ${row.id}`)}><T en="Ask CIT24" th="ถาม CIT24" /></button>
           </div>
         </aside>

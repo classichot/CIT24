@@ -2,25 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ADJUSTMENTS } from "@/lib/model";
-import { computeProvision, liveAdjustments, traceAdjustment } from "@/lib/engine";
+import { traceAdjustment } from "@/lib/engine";
 import { useStore } from "@/lib/store";
 import { PageHead } from "@/components/PageHead";
 import { FlowBar } from "@/components/FlowBar";
 import { Amount } from "@/components/Amount";
-import { T } from "@/lib/i18n";
+import { T, pnd } from "@/lib/i18n";
 import { F } from "@/lib/format";
 
 export default function ProvisionPage() {
-  const { statusOverride, flash } = useStore();
+  const { flash, lang, provision: p, adjustments } = useStore();
   const [basis, setBasis] = useState<"h1" | "fy">("fy");
-  const p = computeProvision(liveAdjustments(statusOverride));
   const taxable = basis === "h1" ? 35900000 : p.taxableProfit;
   const tax = basis === "h1" ? 7180000 : p.currentTax;
   const etr = basis === "h1" ? "21.38%" : `${(p.etr * 100).toFixed(2)}%`;
 
-  const adds = ADJUSTMENTS.filter((a) => a.adjAmt > 0);
-  const deds = ADJUSTMENTS.filter((a) => a.adjAmt < 0);
+  const adds = adjustments.filter((a) => a.adjAmt > 0);
+  const deds = adjustments.filter((a) => a.adjAmt < 0);
 
   return (
     <div>
@@ -47,7 +45,7 @@ export default function ProvisionPage() {
         <div className="stat-cell"><div className="stat-label"><T en="Taxable profit" th="กำไรสุทธิทางภาษี" /></div><div className="stat-val" style={{ fontSize: 26 }}><Amount n={taxable} audit={p.audit} /></div></div>
         <div className="stat-cell"><div className="stat-label"><T en="Current tax at 20%" th="ภาษีงวดปัจจุบัน 20%" /></div><div className="stat-val" style={{ fontSize: 26, color: "var(--color-accent)" }}><Amount n={tax} audit={p.audit} /></div></div>
         <div className="stat-cell"><div className="stat-label"><T en="Effective tax rate" th="อัตราภาษีที่แท้จริง" /></div><div className="stat-val" style={{ fontSize: 26 }}>{etr}</div><div className="stat-hint"><T en="Statutory 20% · gap from permanent items" th="อัตราตามกฎหมาย 20% · ผลต่างจากรายการถาวร" /></div></div>
-        <div className="stat-cell"><div className="stat-label"><T en="Tax payable after credits" th="ภาษีที่ต้องชำระหลังหักเครดิต" /></div><div className="stat-val" style={{ fontSize: 26 }}>{F(p.payable)}</div><div className="stat-hint"><T en="Due with ภ.ง.ด.50 · 30 May 2027" th="ชำระพร้อม ภ.ง.ด.50 · 30 พ.ค. 2570" /></div></div>
+        <div className="stat-cell"><div className="stat-label"><T en="Tax payable after credits" th="ภาษีที่ต้องชำระหลังหักเครดิต" /></div><div className="stat-val" style={{ fontSize: 26 }}>{F(p.payable)}</div><div className="stat-hint"><T en="Due with PND50 · 30 May 2027" th="ชำระพร้อม ภ.ง.ด.50 · 30 พ.ค. 2570" /></div></div>
       </div>
 
       <div className="split-wide">
@@ -81,7 +79,7 @@ export default function ProvisionPage() {
               <tr><td><T en="Tax losses carried forward and utilised" th="ผลขาดทุนยกมาที่ใช้ประโยชน์" /></td><td style={{ fontSize: 12 }}><T en="FY2021 loss · expires FY2026 · 5-year limit" th="ขาดทุนปี 2564 · สิ้นอายุปี 2569" /></td><td className="num" style={{ color: "var(--color-accent-700)" }}>({F(p.losses)})</td></tr>
               <tr style={{ background: "color-mix(in srgb, var(--color-accent) 10%, transparent)" }}><td style={{ fontWeight: 800 }}><T en="Taxable profit" th="กำไรสุทธิทางภาษี" /></td><td /><td className="num" style={{ fontWeight: 800 }}><Amount n={p.taxableProfit} audit={p.audit} /></td></tr>
               <tr><td style={{ fontWeight: 800 }}><T en="Corporate income tax at 20%" th="ภาษีเงินได้นิติบุคคล 20%" /></td><td style={{ fontSize: 12 }}><T en="Standard rate · non-BOI · not SME" th="อัตราปกติ · ไม่ใช่ BOI · ไม่ใช่ SME" /></td><td className="num" style={{ fontWeight: 800 }}><Amount n={p.currentTax} audit={p.audit} /></td></tr>
-              <tr><td><T en="ภ.ง.ด.51 payment credit (forecast)" th="เครดิตภาษีจาก ภ.ง.ด.51 (ประมาณการ)" /></td><td style={{ fontSize: 12 }}><T en="Half-year payment due 31 Aug 2026" th="ชำระครึ่งปี ครบกำหนด 31 ส.ค. 2569" /></td><td className="num" style={{ color: "var(--color-accent-700)" }}>({F(p.pnd51Credit)})</td></tr>
+              <tr><td><T en="PND51 payment credit (forecast)" th="เครดิตภาษีจาก ภ.ง.ด.51 (ประมาณการ)" /></td><td style={{ fontSize: 12 }}><T en="Half-year payment due 31 Aug 2026" th="ชำระครึ่งปี ครบกำหนด 31 ส.ค. 2569" /></td><td className="num" style={{ color: "var(--color-accent-700)" }}>({F(p.pnd51Credit)})</td></tr>
               <tr><td><T en="Withholding-tax credits" th="เครดิตภาษีหัก ณ ที่จ่าย" /></td><td style={{ fontSize: 12 }}><T en="39 of 41 certificates matched" th="จับคู่หนังสือรับรอง 39 จาก 41 ฉบับ" /></td><td className="num" style={{ color: "var(--color-accent-700)" }}>({F(p.whtCredit)})</td></tr>
               <tr style={{ background: "var(--color-surface)" }}><td style={{ fontWeight: 800 }}><T en="Tax payable" th="ภาษีที่ต้องชำระ" /></td><td /><td className="num" style={{ fontWeight: 800 }}>{F(p.payable)}</td></tr>
             </tbody>
@@ -110,7 +108,7 @@ export default function ProvisionPage() {
                 <tr><td>Current income tax expense</td><td className="num">{F(p.currentTax)}</td><td /></tr>
                 <tr><td>Deferred tax expense</td><td className="num">936,800</td><td /></tr>
                 <tr><td>Withholding tax receivable</td><td /><td className="num">{F(p.whtCredit)}</td></tr>
-                <tr><td>Prepaid CIT — ภ.ง.ด.51</td><td /><td className="num">{F(p.pnd51Credit)}</td></tr>
+                <tr><td>{pnd(lang, "Prepaid CIT — PND51")}</td><td /><td className="num">{F(p.pnd51Credit)}</td></tr>
                 <tr><td>Corporate income tax payable</td><td /><td className="num">{F(p.payable)}</td></tr>
                 <tr><td>Deferred tax asset</td><td /><td className="num">936,800</td></tr>
                 <tr style={{ background: "var(--color-surface)" }}><td style={{ fontWeight: 800 }}>Balanced</td><td className="num" style={{ fontWeight: 800 }}>18,185,480</td><td className="num" style={{ fontWeight: 800 }}>18,185,480</td></tr>
@@ -123,7 +121,7 @@ export default function ProvisionPage() {
               <thead><tr><th><T en="Source" th="แหล่ง" /></th><th className="num">THB</th><th className="num">Δ</th></tr></thead>
               <tbody>
                 <tr><td><T en="Provision (this workpaper)" th="ประมาณการภาษี" /></td><td className="num">{F(p.currentTax)}</td><td className="num">—</td></tr>
-                <tr><td><T en="ภ.ง.ด.50 computation" th="การคำนวณ ภ.ง.ด.50" /></td><td className="num">{F(p.currentTax)}</td><td className="num">—</td></tr>
+                <tr><td><T en="PND50 computation" th="การคำนวณ ภ.ง.ด.50" /></td><td className="num">{F(p.currentTax)}</td><td className="num">—</td></tr>
                 <tr><td><T en="Ledger & journal entries" th="บัญชีและรายการบันทึก" /></td><td className="num">{F(p.currentTax)}</td><td className="num">—</td></tr>
                 <tr><td><T en="Payments & credits evidence" th="หลักฐานการชำระและเครดิต" /></td><td className="num">9,500,050</td><td className="num" style={{ color: "var(--color-signal)", fontWeight: 800 }}>86,400</td></tr>
               </tbody>

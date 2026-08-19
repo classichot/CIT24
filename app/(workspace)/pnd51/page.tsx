@@ -19,7 +19,7 @@ export default function Pnd51Page() {
       <PageHead
         kickerEn="Section 67 bis (1) · estimated annual profit"
         kickerTh="มาตรา 67 ทวิ (1) · ประมาณการกำไรสุทธิ"
-        titleEn="ภ.ง.ด.51 penalty-risk simulator"
+        titleEn="PND51 penalty-risk simulator"
         titleTh="ภ.ง.ด.51 แบบจำลองความเสี่ยงเงินเพิ่ม"
         subEn="Due 31 Aug 2026 · understating the annual estimate by more than 25% without reasonable cause carries a 20% surcharge on the shortfall."
         subTh="ครบกำหนด 31 ส.ค. 2569 · หากประมาณการกำไรขาดไปเกินร้อยละ 25 โดยไม่มีเหตุอันสมควร จะมีเงินเพิ่มร้อยละ 20 ของภาษีที่ขาด"
@@ -33,7 +33,7 @@ export default function Pnd51Page() {
                 </label>
               ))}
             </div>
-            <button className="btn btn-primary" onClick={() => flash("ภ.ง.ด.51 estimate submitted for management approval — assumption file attached")}><T en="Submit for approval" th="ส่งขออนุมัติ" /></button>
+            <button className="btn btn-primary" onClick={() => flash("PND51 estimate submitted for management approval — assumption file attached")}><T en="Submit for approval" th="ส่งขออนุมัติ" /></button>
           </>
         }
       />
@@ -193,8 +193,8 @@ export default function Pnd51Page() {
             <h5 className="sec-h"><T en="Prior-year comparison" th="เปรียบเทียบกับปีก่อน" /></h5>
             <table className="table" style={{ fontSize: 12 }}>
               <tbody>
-                <tr><td><T en="FY2025 ภ.ง.ด.51 estimate" th="ประมาณการ ภ.ง.ด.51 ปี 2568" /></td><td className="num">58,000,000</td></tr>
-                <tr><td><T en="FY2025 ภ.ง.ด.50 actual" th="ผลจริง ภ.ง.ด.50 ปี 2568" /></td><td className="num">63,180,000</td></tr>
+                <tr><td><T en="FY2025 PND51 estimate" th="ประมาณการ ภ.ง.ด.51 ปี 2568" /></td><td className="num">58,000,000</td></tr>
+                <tr><td><T en="FY2025 PND50 actual" th="ผลจริง ภ.ง.ด.50 ปี 2568" /></td><td className="num">63,180,000</td></tr>
                 <tr><td><T en="Understatement achieved" th="ประมาณการต่ำไป" /></td><td className="num" style={{ fontWeight: 800 }}>8.2%</td></tr>
                 <tr><td><T en="Surcharge incurred" th="เงินเพิ่มที่เกิดขึ้น" /></td><td className="num">—</td></tr>
               </tbody>
@@ -204,7 +204,7 @@ export default function Pnd51Page() {
             <h5 className="sec-h"><T en="Form fields" th="ช่องกรอกในแบบ" /></h5>
             <table className="table" style={{ fontSize: 12 }}>
               <tbody>
-                <tr><td>ภ.ง.ด.51 <T en="item 1 — estimated net profit" th="ข้อ 1 — ประมาณการกำไรสุทธิ" /></td><td className="num" style={{ fontWeight: 600 }}>{F(pnd51.declared)}</td></tr>
+                <tr><td><T en="PND51" th="ภ.ง.ด.51" /> <T en="item 1 — estimated net profit" th="ข้อ 1 — ประมาณการกำไรสุทธิ" /></td><td className="num" style={{ fontWeight: 600 }}>{F(pnd51.declared)}</td></tr>
                 <tr><td><T en="item 2 — tax at 20%" th="ข้อ 2 — ภาษี 20%" /></td><td className="num">{F(sim.declaredTax)}</td></tr>
                 <tr><td><T en="item 3 — one half payable" th="ข้อ 3 — ชำระกึ่งหนึ่ง" /></td><td className="num" style={{ fontWeight: 800 }}>{F(sim.halfDec)}</td></tr>
                 <tr><td><T en="item 4 — WHT credit" th="ข้อ 4 — เครดิตภาษีหัก ณ ที่จ่าย" /></td><td className="num">1,043,200</td></tr>

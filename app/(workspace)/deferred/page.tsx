@@ -1,6 +1,6 @@
 "use client";
 
-import { ROLLFORWARD, REVGUARD } from "@/lib/model";
+import { ROLLFORWARD } from "@/lib/model";
 import { dtaRegister } from "@/lib/engine";
 import { useStore } from "@/lib/store";
 import { PageHead, statusCls } from "@/components/PageHead";
@@ -8,7 +8,7 @@ import { T } from "@/lib/i18n";
 import { F } from "@/lib/format";
 
 export default function DeferredPage() {
-  const { flash } = useStore();
+  const { flash, reversals, claimReversal, canMutate, losses } = useStore();
   const reg = dtaRegister();
   const total = reg.reduce((s, r) => s + r.dt, 0);
 
@@ -32,7 +32,7 @@ export default function DeferredPage() {
       <div className="stat-row" style={{ gridTemplateColumns: "repeat(3, 1fr)", borderTop: "2px solid var(--color-divider)" }}>
         <div className="stat-cell"><div className="stat-label"><T en="Temporary differences closing" th="ผลต่างชั่วคราวยกไป" /></div><div className="stat-val" style={{ fontSize: 26 }}>{F(reg.reduce((s, r) => s + r.diff, 0))}</div></div>
         <div className="stat-cell"><div className="stat-label"><T en="Deferred tax asset @ 20%" th="สินทรัพย์ภาษีรอตัดบัญชี 20%" /></div><div className="stat-val" style={{ fontSize: 26, color: "var(--color-accent)" }}>{F(total)}</div></div>
-        <div className="stat-cell"><div className="stat-label"><T en="Tax-loss DTA" th="DTA จากผลขาดทุน" /></div><div className="stat-val" style={{ fontSize: 26 }}>—</div><div className="stat-hint"><T en="FY2021 loss utilised in full this year" th="ขาดทุนปี 2564 ใช้หมดในปีนี้" /></div></div>
+        <div className="stat-cell"><div className="stat-label"><T en="Tax-loss DTA" th="DTA จากผลขาดทุน" /></div><div className="stat-val" style={{ fontSize: 26 }}>{F(losses.reduce((s, y) => s + y.remaining, 0) * 0.2, true)}</div><div className="stat-hint"><T en="Remaining carry-forward × 20%" th="ยอดยกไป × 20%" /></div></div>
       </div>
 
       <div className="split-wide">
@@ -83,7 +83,7 @@ export default function DeferredPage() {
         <aside className="col-aside">
           <div>
             <h5 className="sec-h" style={{ color: "var(--color-accent)" }}><T en="Automatic Reversal Guardian" th="ผู้เฝ้าระวังการกลับรายการอัตโนมัติ" /></h5>
-            {REVGUARD.map((r) => (
+            {reversals.map((r) => (
               <div key={r.id} style={{ padding: "10px 0", borderBottom: "1px solid var(--color-divider)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                   <span style={{ fontWeight: 600, fontSize: 13 }}>{r.name}</span>
@@ -91,7 +91,7 @@ export default function DeferredPage() {
                 </div>
                 <div className="text-muted" style={{ fontSize: 11, marginTop: 2 }}>{r.note}</div>
                 {r.status === "Action needed" && (
-                  <button className="btn btn-ghost" style={{ paddingLeft: 0 }} onClick={() => flash("ADJ-2026-0055 created: 900,000 deduction, evidence linked from FY2024")}><T en="Claim deduction" th="ขอหักรายจ่าย" /> →</button>
+                  <button className="btn btn-ghost" style={{ paddingLeft: 0 }} disabled={!canMutate} onClick={() => claimReversal(r.id)}><T en="Claim deduction" th="ขอหักรายจ่าย" /> →</button>
                 )}
               </div>
             ))}

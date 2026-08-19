@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "CIT24 — Thai Corporate Tax Operating System",
-  description: "AI-assisted Thai corporate income tax provision and compliance. Upload accounting records once. CIT24 creates the provision, ภ.ง.ด.51, ภ.ง.ด.50 and a defensible evidence trail.",
+  description: "AI-assisted Thai corporate income tax provision and compliance. Upload accounting records once. CIT24 creates the provision, PND51, PND50 and a defensible evidence trail.",
   applicationName: "CIT24",
   icons: { icon: [{ url: "/favicon.svg", type: "image/svg+xml" }] },
 };

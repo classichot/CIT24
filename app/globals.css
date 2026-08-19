@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Chakra+Petch:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Chakra+Petch:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;600;700;800&display=swap");
 
 :root {
   --color-bg: #f3f2f2;
@@ -38,6 +38,8 @@
   --font-heading-weight: 800;
   --font-body: "Archivo", system-ui, sans-serif;
   --font-thai: "Chakra Petch", "Archivo", system-ui, sans-serif;
+  --font-zh: "Noto Sans SC", "Archivo", system-ui, sans-serif;
+  --font-ja: "Noto Sans JP", "Archivo", system-ui, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
   --space-1: 4px;
   --space-2: 8px;
@@ -169,6 +171,10 @@ textarea.input { min-height: 90px; resize: vertical; }
 .tag-signal { background: var(--color-signal-200); color: var(--color-signal-700); border: 1px solid color-mix(in srgb, var(--color-signal) 45%, transparent); }
 html[lang="th"] body, html[lang="th"] h1, html[lang="th"] h2, html[lang="th"] h3, html[lang="th"] h4, html[lang="th"] h5, html[lang="th"] h6,
 html[lang="th"] .btn, html[lang="th"] .nav-btn { font-family: var(--font-thai); }
+html[lang="zh"] body, html[lang="zh"] h1, html[lang="zh"] h2, html[lang="zh"] h3, html[lang="zh"] h4, html[lang="zh"] h5, html[lang="zh"] h6,
+html[lang="zh"] .btn, html[lang="zh"] .nav-btn { font-family: var(--font-zh); }
+html[lang="ja"] body, html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3, html[lang="ja"] h4, html[lang="ja"] h5, html[lang="ja"] h6,
+html[lang="ja"] .btn, html[lang="ja"] .nav-btn { font-family: var(--font-ja); }
 .l-th { font-family: var(--font-thai); }
 .page-kicker { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-accent); margin-bottom: 4px; }
 .page-sub { font-size: 13px; color: color-mix(in srgb, var(--color-text) 60%, transparent); margin-top: 4px; }
@@ -628,6 +634,36 @@ html[data-theme="bw"] .map-dot.topup {
   background: var(--color-surface); cursor: pointer;
 }
 .dropzone:hover { border-color: var(--color-accent); }
+.dropzone.drag {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+.dropzone input[type="file"] { display: none; }
+.dropzone-title { font-weight: 800; margin-bottom: 6px; }
+.dropzone-hint { font-size: 12px; color: var(--color-neutral-600); max-width: 62ch; margin: 0 auto; line-height: 1.5; }
+
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  margin: 0 0 16px;
+  border: 2px solid var(--color-divider);
+}
+@media (max-width: 1100px) {
+  .doc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.doc-slot {
+  padding: 10px 12px;
+  background: var(--color-bg);
+  min-height: 88px;
+}
+.doc-slot.ok { background: color-mix(in srgb, var(--color-accent) 6%, var(--color-bg)); }
+.doc-slot.fail { background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg)); }
+.doc-slot .slot-kicker { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; color: var(--color-neutral-600); }
+.doc-slot .slot-name { font-weight: 700; font-size: 13px; margin-top: 2px; }
+.doc-slot .slot-meta { font-size: 11px; margin-top: 6px; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.score-num { font-weight: 800; font-variant-numeric: tabular-nums; }
+.score-num.low { color: var(--color-accent); }
 
 .alloc {
   display: flex; flex-direction: column; align-items: stretch; gap: 0; max-width: 420px;

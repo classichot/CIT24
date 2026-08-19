@@ -2,12 +2,12 @@
 
 **AI-assisted Thai Corporate Tax Operating System — not a PND50 form generator.**
 
-> Upload your accounting records once. CIT24 creates the provision, ภ.ง.ด.51, ภ.ง.ด.50 and a defensible evidence trail — and remembers every tax position for next year.
+> Upload your accounting records once. CIT24 creates the provision, PND51, PND50 and a defensible evidence trail — and remembers every tax position for next year.
 
 CIT24 converts Trial Balance, General Ledger, financial statements and supporting documents into an explainable, reviewable and traceable Thai corporate tax position under sections 65, 65 bis and 65 ter of the Revenue Code.
 
 ```
-UPLOAD → MAP → RULE ENGINE → TAX ADJUSTMENT LEDGER → PROVISION / ภ.ง.ด.51 / ภ.ง.ด.50 → REVIEW → AUDIT DEFENCE
+UPLOAD → MAP → RULE ENGINE → TAX ADJUSTMENT LEDGER → PROVISION / PND51 / PND50 → REVIEW → AUDIT DEFENCE
 ```
 
 ## Architectural principle
@@ -23,13 +23,13 @@ A language model never calculates or silently changes a tax position. Click any 
 
 ## MVP
 
-Ordinary Thai non-BOI companies using the standard ภ.ง.ด.51 estimation method (section 67 bis (1)):
+Ordinary Thai non-BOI companies using the standard PND51 estimation method (section 67 bis (1)):
 
 - TB / GL / document ingestion with mapping assistant
 - Top recurring Thai tax rules (s.65 ter library, not a generic “non-deductible” bucket)
 - Tax Adjustment Ledger with versioning (approved records are never overwritten)
 - Automatic Reversal Guardian and Corporate Tax Memory
-- Current-tax provision, ภ.ง.ด.51 penalty-risk simulator, ภ.ง.ด.50 field mapping
+- Current-tax provision, PND51 penalty-risk simulator, PND50 field mapping
 - Review, approval, period lock, evidence-linked workpapers, Thai/English UI
 - Complete append-only audit trail
 

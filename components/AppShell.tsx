@@ -7,9 +7,11 @@ import {
   BookOpen,
   Building2,
   Check,
+  Cog,
   Database,
   FileText,
   GitBranch,
+  History,
   LayoutGrid,
   LogOut,
   Menu,
@@ -22,45 +24,51 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { ADVISOR_USER, CLIENTS, CORPORATE_USER, DEFENCE_USER } from "@/lib/model";
+import { ADVISOR_USER, CLIENTS, CORPORATE_USER, DEFENCE_USER, type Lang } from "@/lib/model";
 import { useStore } from "@/lib/store";
 import { ModeToggle } from "@/components/ModeToggle";
 import { LangToggle } from "@/components/LangToggle";
 import { Copilot } from "@/components/Copilot";
 import { AuditTrail } from "@/components/AuditTrail";
-import { T } from "@/lib/i18n";
+import { pick, T } from "@/lib/i18n";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 
 const NAV = [
-  { group: "Workspace", groupTh: "พื้นที่ทำงาน", items: [
-    { href: "/clients", en: "Client portfolio", th: "พอร์ตลูกค้า", icon: Building2, advisor: true },
-    { href: "/overview", en: "Tax close", th: "ปิดภาษี", icon: LayoutGrid },
-    { href: "/entity", en: "Entity profile", th: "โปรไฟล์กิจการ", icon: Building2 },
+  { group: "Workspace", groupTh: "พื้นที่ทำงาน", groupZh: "工作区", groupJa: "ワークスペース", items: [
+    { href: "/clients", en: "Client portfolio", th: "พอร์ตลูกค้า", zh: "客户组合", ja: "顧客ポートフォリオ", icon: Building2, advisor: true },
+    { href: "/overview", en: "Tax close", th: "ปิดภาษี", zh: "税务关账", ja: "税務クローズ", icon: LayoutGrid },
+    { href: "/entity", en: "Entity profile", th: "โปรไฟล์กิจการ", zh: "主体档案", ja: "事業体プロファイル", icon: Building2 },
   ]},
-  { group: "Tax close", groupTh: "ปิดภาษี", items: [
-    { href: "/data", en: "Data & mapping", th: "ข้อมูลและการจับคู่", icon: Upload },
-    { href: "/ledger", en: "Tax Adjustment Ledger", th: "ทะเบียนรายการปรับปรุง", icon: GitBranch, badge: "14" },
-    { href: "/rules", en: "Rule library", th: "คลังกฎภาษี", icon: BookOpen },
-    { href: "/memory", en: "Tax Memory", th: "ความจำภาษี", icon: Sparkles },
+  { group: "Tax close", groupTh: "ปิดภาษี", groupZh: "税务关账", groupJa: "税務クローズ", items: [
+    { href: "/data", en: "Data & mapping", th: "ข้อมูลและการจับคู่", zh: "数据与科目映射", ja: "データとマッピング", icon: Upload },
+    { href: "/ledger", en: "Tax Adjustment Ledger", th: "ทะเบียนรายการปรับปรุง", zh: "纳税调整台账", ja: "税務調整台帳", icon: GitBranch },
+    { href: "/far", en: "Tax depreciation", th: "ค่าเสื่อมราคาทางภาษี", zh: "税务折旧", ja: "税務減価償却", icon: Cog },
+    { href: "/rules", en: "Rule library", th: "คลังกฎภาษี", zh: "税法规则库", ja: "税法ルール庫", icon: BookOpen },
+    { href: "/memory", en: "Tax Memory", th: "ความจำภาษี", zh: "税务记忆", ja: "税務メモリ", icon: Sparkles },
   ]},
-  { group: "Provision", groupTh: "ประมาณการ", items: [
-    { href: "/provision", en: "Current tax", th: "ภาษีงวดปัจจุบัน", icon: FileText },
-    { href: "/deferred", en: "Deferred tax", th: "ภาษีรอตัดบัญชี", icon: Timer },
+  { group: "Provision", groupTh: "ประมาณการ", groupZh: "准备", groupJa: "引当", items: [
+    { href: "/provision", en: "Current tax", th: "ภาษีงวดปัจจุบัน", zh: "当期所得税", ja: "当期税", icon: FileText },
+    { href: "/losses", en: "Tax-loss schedule", th: "ตารางผลขาดทุน", zh: "税务亏损表", ja: "欠損金表", icon: History },
+    { href: "/deferred", en: "Deferred tax", th: "ภาษีรอตัดบัญชี", zh: "递延所得税", ja: "繰延税金", icon: Timer },
   ]},
-  { group: "Filings", groupTh: "การยื่นแบบ", items: [
-    { href: "/pnd51", en: "ภ.ง.ด.51 simulator", th: "ภ.ง.ด.51 แบบจำลอง", icon: AlertTriangle, hot: true },
-    { href: "/pnd50", en: "ภ.ง.ด.50 & filing", th: "ภ.ง.ด.50 และการยื่น", icon: FileText },
-    { href: "/reports", en: "Reports", th: "รายงาน", icon: Database },
+  { group: "Filings", groupTh: "การยื่นแบบ", groupZh: "申报", groupJa: "申告", items: [
+    { href: "/pnd51", en: "PND51 simulator", th: "ภ.ง.ด.51 แบบจำลอง", zh: "PND51 模拟", ja: "PND51シミュレーター", icon: AlertTriangle, hot: true },
+    { href: "/pnd50", en: "PND50 & filing", th: "ภ.ง.ด.50 และการยื่น", zh: "PND50 与申报", ja: "PND50と申告", icon: FileText },
+    { href: "/reports", en: "Reports", th: "รายงาน", zh: "报告", ja: "レポート", icon: Database },
   ]},
-  { group: "Control", groupTh: "การควบคุม", items: [
-    { href: "/review", en: "Review & approval", th: "สอบทานและอนุมัติ", icon: Check },
-    { href: "/evidence", en: "Audit defence", th: "แฟ้มต่อสู้คดี", icon: Shield },
-    { href: "/ecosystem", en: "24 ecosystem", th: "ระบบนิเวศ 24", icon: Scale },
-    { href: "/copilot", en: "Ask CIT24", th: "ถาม CIT24", icon: MessageSquare },
-    { href: "/settings", en: "Settings", th: "ตั้งค่า", icon: Settings },
+  { group: "Control", groupTh: "การควบคุม", groupZh: "控制", groupJa: "統制", items: [
+    { href: "/review", en: "Review & approval", th: "สอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認", icon: Check },
+    { href: "/evidence", en: "Audit defence", th: "แฟ้มต่อสู้คดี", zh: "税务稽查应对", ja: "税務調査対応", icon: Shield },
+    { href: "/ecosystem", en: "24 ecosystem", th: "ระบบนิเวศ 24", zh: "24 生态", ja: "24エコシステム", icon: Scale },
+    { href: "/copilot", en: "Ask CIT24", th: "ถาม CIT24", zh: "询问 CIT24", ja: "CIT24に質問", icon: MessageSquare },
+    { href: "/settings", en: "Settings", th: "ตั้งค่า", zh: "设置", ja: "設定", icon: Settings },
   ]},
 ];
+
+function loc(lang: Lang, en: string, th: string, zh?: string, ja?: string) {
+  return pick(lang, { en, th, zh, ja });
+}
 
 const TABS = [
   { href: "/overview", label: "Home", icon: LayoutGrid },
@@ -70,25 +78,26 @@ const TABS = [
   { href: "/review", label: "Review", icon: Check },
 ];
 
-const TITLES: Record<string, [string, string, string, string]> = {
-  "/overview": ["Corporate mode", "Tax close", "โหมดองค์กร", "ปิดภาษี"],
-  "/clients": ["Advisory mode", "Client portfolio", "โหมดที่ปรึกษา", "พอร์ตลูกค้า"],
-  "/entity": ["Entity", "Tax profile", "กิจการ", "โปรไฟล์ภาษี"],
-  "/data": ["Step 1", "Data & mapping", "ขั้นตอน 1", "ข้อมูลและการจับคู่"],
-  "/mapping": ["Step 1", "Account mapping", "ขั้นตอน 1", "จับคู่ผังบัญชี"],
-  "/ledger": ["Control centre", "Tax Adjustment Ledger", "ศูนย์ควบคุม", "ทะเบียนรายการปรับปรุงภาษี"],
-  "/rules": ["Killer feature", "Tax Law Impact Engine", "จุดเด่น", "เครื่องมือผลกระทบกฎหมายภาษี"],
-  "/memory": ["Killer feature", "Corporate Tax Memory", "จุดเด่น", "ความจำภาษีนิติบุคคล"],
-  "/provision": ["Continuous close", "Current tax provision", "ปิดภาษีต่อเนื่อง", "ภาษีเงินได้งวดปัจจุบัน"],
-  "/deferred": ["TAS 12", "Deferred tax", "มาตรฐานบัญชี 12", "ภาษีเงินได้รอการตัดบัญชี"],
-  "/pnd51": ["Section 67 bis (1)", "ภ.ง.ด.51 penalty-risk simulator", "มาตรา 67 ทวิ (1)", "ภ.ง.ด.51 แบบจำลองความเสี่ยงเงินเพิ่ม"],
-  "/pnd50": ["Annual return", "ภ.ง.ด.50 computation & filing", "แบบประจำปี", "ภ.ง.ด.50 การคำนวณและชุดยื่น"],
-  "/reports": ["Outputs", "Workpapers & packages", "ผลลัพธ์", "กระดาษทำการและชุดเอกสาร"],
-  "/review": ["Workflow", "Review & approval", "ขั้นตอนงาน", "การสอบทานและอนุมัติ"],
-  "/evidence": ["Audit defence mode", "Evidence room", "โหมดต่อสู้คดี", "ห้องหลักฐาน"],
-  "/ecosystem": ["Integrated 24", "Tax ecosystem", "ระบบ 24", "ระบบนิเวศภาษี"],
-  "/copilot": ["Intelligence", "Ask CIT24", "ปัญญาประดิษฐ์", "ถาม CIT24"],
-  "/settings": ["Workspace", "Settings", "พื้นที่ทำงาน", "ตั้งค่า"],
+const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja?: string }; title: { en: string; th: string; zh?: string; ja?: string } }> = {
+  "/overview": { kicker: { en: "Corporate mode", th: "โหมดองค์กร", zh: "企业模式", ja: "コーポレート" }, title: { en: "Tax close", th: "ปิดภาษี", zh: "税务关账", ja: "税務クローズ" } },
+  "/clients": { kicker: { en: "Advisory mode", th: "โหมดที่ปรึกษา", zh: "顾问模式", ja: "アドバイザリー" }, title: { en: "Client portfolio", th: "พอร์ตลูกค้า", zh: "客户组合", ja: "顧客ポートフォリオ" } },
+  "/entity": { kicker: { en: "Entity", th: "กิจการ", zh: "主体", ja: "事業体" }, title: { en: "Tax profile", th: "โปรไฟล์ภาษี", zh: "税务档案", ja: "税務プロファイル" } },
+  "/data": { kicker: { en: "Step 1", th: "ขั้นตอน 1", zh: "步骤 1", ja: "ステップ1" }, title: { en: "Data & mapping", th: "ข้อมูลและการจับคู่", zh: "数据与映射", ja: "データとマッピング" } },
+  "/mapping": { kicker: { en: "Step 1", th: "ขั้นตอน 1", zh: "步骤 1", ja: "ステップ1" }, title: { en: "Account mapping", th: "จับคู่ผังบัญชี", zh: "科目映射", ja: "勘定マッピング" } },
+  "/ledger": { kicker: { en: "Control centre", th: "ศูนย์ควบคุม", zh: "控制中心", ja: "コントロールセンター" }, title: { en: "Tax Adjustment Ledger", th: "ทะเบียนรายการปรับปรุงภาษี", zh: "纳税调整台账", ja: "税務調整台帳" } },
+  "/far": { kicker: { en: "Royal Decree 145", th: "พระราชกฤษฎีกา 145", zh: "第145号王室法令", ja: "勅令145号" }, title: { en: "Tax depreciation", th: "ค่าเสื่อมราคาทางภาษี", zh: "税务折旧", ja: "税務減価償却" } },
+  "/rules": { kicker: { en: "Killer feature", th: "จุดเด่น", zh: "核心能力", ja: "中核機能" }, title: { en: "Tax Law Impact Engine", th: "เครื่องมือผลกระทบกฎหมายภาษี", zh: "税法影响引擎", ja: "税法インパクトエンジン" } },
+  "/memory": { kicker: { en: "Killer feature", th: "จุดเด่น", zh: "核心能力", ja: "中核機能" }, title: { en: "Corporate Tax Memory", th: "ความจำภาษีนิติบุคคล", zh: "企业税务记忆", ja: "法人税メモリ" } },
+  "/provision": { kicker: { en: "Continuous close", th: "ปิดภาษีต่อเนื่อง", zh: "持续关账", ja: "継続クローズ" }, title: { en: "Current tax provision", th: "ภาษีเงินได้งวดปัจจุบัน", zh: "当期所得税准备", ja: "当期税金引当" } },
+  "/losses": { kicker: { en: "Section 65", th: "มาตรา 65", zh: "第65条", ja: "65条" }, title: { en: "Tax-loss schedule", th: "ตารางผลขาดทุนทางภาษี", zh: "税务亏损表", ja: "欠損金スケジュール" } },
+  "/pnd51": { kicker: { en: "Section 67 bis (1)", th: "มาตรา 67 ทวิ (1)", zh: "第67条之二(1)", ja: "67条の2(1)" }, title: { en: "PND51 penalty-risk simulator", th: "ภ.ง.ด.51 แบบจำลองความเสี่ยงเงินเพิ่ม", zh: "PND51 滞纳金风险模拟", ja: "PND51加算税シミュレーター" } },
+  "/pnd50": { kicker: { en: "Annual return", th: "แบบประจำปี", zh: "年度申报", ja: "確定申告" }, title: { en: "PND50 computation & filing", th: "ภ.ง.ด.50 การคำนวณและชุดยื่น", zh: "PND50 计算与申报包", ja: "PND50計算と申告パック" } },
+  "/reports": { kicker: { en: "EN · TH · ZH · JA", th: "EN · TH · ZH · JA", zh: "英 · 泰 · 中 · 日", ja: "英 · 泰 · 中 · 日" }, title: { en: "Workpapers & packages", th: "กระดาษทำการและชุดเอกสาร", zh: "工作底稿与资料包", ja: "ワークペーパーとパッケージ" } },
+  "/review": { kicker: { en: "Workflow", th: "ขั้นตอนงาน", zh: "工作流", ja: "ワークフロー" }, title: { en: "Review & approval", th: "การสอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認" } },
+  "/evidence": { kicker: { en: "Audit defence mode", th: "โหมดต่อสู้คดี", zh: "稽查应对模式", ja: "調査対応モード" }, title: { en: "Evidence room", th: "ห้องหลักฐาน", zh: "证据室", ja: "証憑ルーム" } },
+  "/ecosystem": { kicker: { en: "Integrated 24", th: "ระบบ 24", zh: "24 集成", ja: "統合24" }, title: { en: "Tax ecosystem", th: "ระบบนิเวศภาษี", zh: "税务生态", ja: "税務エコシステム" } },
+  "/copilot": { kicker: { en: "Intelligence", th: "ปัญญาประดิษฐ์", zh: "智能", ja: "インテリジェンス" }, title: { en: "Ask CIT24", th: "ถาม CIT24", zh: "询问 CIT24", ja: "CIT24に質問" } },
+  "/settings": { kicker: { en: "Workspace", th: "พื้นที่ทำงาน", zh: "工作区", ja: "ワークスペース" }, title: { en: "Settings", th: "ตั้งค่า", zh: "设置", ja: "設定" } },
 };
 
 function isActive(path: string, href: string) {
@@ -98,10 +107,10 @@ function isActive(path: string, href: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const router = useRouter();
-  const { logout, toast, navOpen, setNavOpen, mode, clientId, setCopilotOpen, copilotOpen, lang } = useStore();
+  const { logout, toast, navOpen, setNavOpen, mode, clientId, setCopilotOpen, copilotOpen, lang, adjustments } = useStore();
   const user = mode === "advisor" ? ADVISOR_USER : mode === "defence" ? DEFENCE_USER : CORPORATE_USER;
   const client = CLIENTS.find((c) => c.id === clientId) ?? CLIENTS[0];
-  const [kickerEn, titleEn, kickerTh, titleTh] = TITLES[path] || ["CIT24", "Thai CIT OS", "CIT24", "ระบบภาษีนิติบุคคล"];
+  const title = TITLES[path] || { kicker: { en: "CIT24", th: "CIT24" }, title: { en: "Thai CIT OS", th: "ระบบภาษีนิติบุคคล", zh: "泰国企业所得税系统", ja: "タイ法人税OS" } };
 
   useEffect(() => { setNavOpen(false); }, [path, setNavOpen]);
 
@@ -121,7 +130,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <Link href={mode === "advisor" ? "/clients" : "/overview"} onClick={() => setNavOpen(false)} style={{ display: "block", padding: "12px 14px", borderBottom: "2px solid var(--color-divider)", background: "var(--color-surface)", textDecoration: "none", color: "inherit" }}>
           <div style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-neutral-600)" }}>
-            {mode === "advisor" ? (lang === "th" ? "งานบริการ" : "Engagement") : mode === "defence" ? (lang === "th" ? "แฟ้มตรวจสอบ" : "Audit file") : (lang === "th" ? "กิจการ" : "Entity")}
+            {mode === "advisor" ? loc(lang, "Engagement", "งานบริการ", "委托", "エンゲージメント") : mode === "defence" ? loc(lang, "Audit file", "แฟ้มตรวจสอบ", "稽查档案", "調査ファイル") : loc(lang, "Entity", "กิจการ", "主体", "事業体")}
           </div>
           <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 13 }}>{lang === "th" ? client.nameTh : client.name}</div>
           <div style={{ fontSize: 11, color: "var(--color-neutral-600)", marginTop: 2 }}>TIN {client.tin} · {client.period}</div>
@@ -132,14 +141,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             if (!items.length) return null;
             return (
               <div key={g.group}>
-                <div className="nav-group">{lang === "th" ? g.groupTh : g.group}</div>
+                <div className="nav-group">{loc(lang, g.group, g.groupTh, g.groupZh, g.groupJa)}</div>
                 {items.map((item) => {
                   const Icon = item.icon;
                   return (
                     <Link key={item.href} href={item.href} onClick={() => setNavOpen(false)} className={`nav-btn${isActive(path, item.href) ? " active" : ""}`}>
                       <Icon size={15} />
-                      <span style={{ flex: 1 }}>{lang === "th" ? item.th : item.en}</span>
-                      {"badge" in item && item.badge && <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.7 }}>{item.badge}</span>}
+                      <span style={{ flex: 1 }}>{loc(lang, item.en, item.th, item.zh, item.ja)}</span>
+                      {item.href === "/ledger" && <span style={{ fontSize: 10, fontWeight: 800, opacity: 0.7 }}>{adjustments.length}</span>}
                       {"hot" in item && item.hot && <span style={{ width: 6, height: 6, background: "var(--color-accent)", flex: "none" }} />}
                     </Link>
                   );
@@ -156,7 +165,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="tag tag-neutral">PIT24</span>
             </div>
             <div style={{ fontSize: 10, lineHeight: 1.5, color: "color-mix(in srgb, var(--color-text) 55%, transparent)", padding: "0 8px 8px" }}>
-              <T en="Continuous close: GL read through 31 Jul 2026." th="ปิดภาษีต่อเนื่อง: อ่านบัญชีแยกประเภทถึง 31 ก.ค. 2569" />
+              <T en="Continuous close: GL read through 31 Jul 2026." th="ปิดภาษีต่อเนื่อง: อ่านบัญชีแยกประเภทถึง 31 ก.ค. 2569" zh="持续关账：总账读取至 2026年7月31日。" ja="継続クローズ：GLは2026年7月31日まで。" />
             </div>
           </div>
         </nav>
@@ -183,17 +192,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="topbar">
           <button className="icon-btn menu-btn" onClick={() => setNavOpen(true)} aria-label="Open menu"><Menu size={20} /></button>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-accent)" }}>{lang === "th" ? kickerTh : kickerEn}</div>
-            <h3 style={{ margin: "2px 0 0" }}>{lang === "th" ? titleTh : titleEn}</h3>
+            <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-accent)" }}>{pick(lang, title.kicker)}</div>
+            <h3 style={{ margin: "2px 0 0" }}>{pick(lang, title.title)}</h3>
           </div>
           <div className="deadline-pill header-hide-sm">
             <AlertTriangle size={13} />
-            ภ.ง.ด.51 · due 31 Aug 2026 · 13 days
+            {lang === "th" ? "ภ.ง.ด.51" : "PND51"} · {loc(lang, "due 31 Aug 2026 · 13 days", "ครบ 31 ส.ค. 2569 · 13 วัน", "截止 2026年8月31日 · 13天", "期限 2026年8月31日 · 13日")}
           </div>
           <LangToggle />
           <ModeToggle compact />
-          <button className="btn btn-secondary header-hide-sm" onClick={() => setCopilotOpen(!copilotOpen)}><MessageSquare size={16} /><T en="Ask CIT24" th="ถาม CIT24" /></button>
-          <Link href="/pnd50" className="btn btn-primary header-hide-sm"><FileText size={16} /><T en="Filing pack" th="ชุดยื่นแบบ" /></Link>
+          <button className="btn btn-secondary header-hide-sm" onClick={() => setCopilotOpen(!copilotOpen)}><MessageSquare size={16} /><T en="Ask CIT24" th="ถาม CIT24" zh="询问 CIT24" ja="CIT24に質問" /></button>
+          <Link href="/pnd50" className="btn btn-primary header-hide-sm"><FileText size={16} /><T en="Filing pack" th="ชุดยื่นแบบ" zh="申报包" ja="申告パック" /></Link>
         </header>
         <div className="workspace">
           <main className="page-main">{children}</main>

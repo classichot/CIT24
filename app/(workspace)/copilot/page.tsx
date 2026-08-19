@@ -8,7 +8,7 @@ export default function CopilotPage() {
   const { ask, setCopilotOpen } = useStore();
   const qs = [
     ["Why is entertainment added back?", "ทำไมค่ารับรองถูกบวกกลับ?"],
-    ["Will ภ.ง.ด.51 attract a surcharge?", "ภ.ง.ด.51 จะมีเงินเพิ่มหรือไม่?"],
+    ["Will PND51 attract a surcharge?", "ภ.ง.ด.51 จะมีเงินเพิ่มหรือไม่?"],
     ["Which reversals are due this year?", "รายการกลับรายการใดถึงกำหนดปีนี้?"],
     ["Explain the TP24 management-fee adjustment", "อธิบายรายการปรับปรุงค่าบริหารจาก TP24"],
     ["What changed from last year?", "ปีนี้ต่างจากปีก่อนอย่างไร?"],

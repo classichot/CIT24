@@ -5,11 +5,11 @@ import { ArrowUp, BookOpen, X } from "lucide-react";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { answerCopilot, SUGGESTIONS, type CopilotMsg } from "@/lib/copilot";
-import { computeProvision, liveAdjustments, simulatePnd51 } from "@/lib/engine";
+import { simulatePnd51 } from "@/lib/engine";
 import { T } from "@/lib/i18n";
 
 export function Copilot() {
-  const { copilotOpen, setCopilotOpen, consumeAsk, pendingAsk, statusOverride, pnd51 } = useStore();
+  const { copilotOpen, setCopilotOpen, consumeAsk, pendingAsk, provision: p, pnd51 } = useStore();
   const [log, setLog] = useState<CopilotMsg[]>([
     {
       role: "assistant",
@@ -34,7 +34,6 @@ export function Copilot() {
   function run(text: string) {
     const t = text.trim();
     if (!t) return;
-    const p = computeProvision(liveAdjustments(statusOverride));
     const sim = simulatePnd51(pnd51.g, pnd51.m, pnd51.declared, pnd51.method);
     setLog((l) => [...l, { role: "user", text: t }, answerCopilot(t, p, sim)]);
     setQ("");

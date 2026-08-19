@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { CLIENTS, FEED } from "@/lib/model";
 import { useStore } from "@/lib/store";
 import { PageHead, riskCls } from "@/components/PageHead";
-import { T } from "@/lib/i18n";
+import { T, pnd } from "@/lib/i18n";
 import { F } from "@/lib/format";
 
 export default function ClientsPage() {
-  const { setClientId, ask } = useStore();
+  const { setClientId, ask, lang } = useStore();
   const router = useRouter();
 
   return (
@@ -23,14 +23,14 @@ export default function ClientsPage() {
         actions={
           <>
             <button className="btn btn-secondary" onClick={() => router.push("/review")}><T en="Reviewer workload" th="ภาระงานผู้สอบทาน" /></button>
-            <button className="btn btn-primary" onClick={() => router.push("/pnd51")}><T en="Open ภ.ง.ด.51 simulator" th="เปิดแบบจำลอง ภ.ง.ด.51" /></button>
+            <button className="btn btn-primary" onClick={() => router.push("/pnd51")}><T en="Open PND51 simulator" th="เปิดแบบจำลอง ภ.ง.ด.51" /></button>
           </>
         }
       />
 
       <div className="stat-row" style={{ gridTemplateColumns: "repeat(5, 1fr)", borderTop: "2px solid var(--color-divider)" }}>
         {[
-          { l: "Filings due ≤ 30 days", lth: "ครบกำหนดยื่นภายใน 30 วัน", v: "4", hint: "2 × ภ.ง.ด.51 · 2 × ภ.ง.ด.50", hot: true },
+          { l: "Filings due ≤ 30 days", lth: "ครบกำหนดยื่นภายใน 30 วัน", v: "4", hint: "2 × PND51 · 2 × PND50", hintTh: "2 × ภ.ง.ด.51 · 2 × ภ.ง.ด.50", hot: true },
           { l: "Adjustments in review", lth: "รายการปรับปรุงรอสอบทาน", v: "23", hint: "6 above materiality" },
           { l: "Evidence requests open", lth: "คำขอเอกสารค้างอยู่", v: "11", hint: "3 overdue with client" },
           { l: "Reversals due FY2026", lth: "รายการกลับรายการปี 2569", v: "7", hint: "THB 4.9m deduction at risk", signal: true },
@@ -39,7 +39,7 @@ export default function ClientsPage() {
           <div key={k.l} className="stat-cell">
             <div className="stat-label"><T en={k.l} th={k.lth} /></div>
             <div className="stat-val" style={k.hot ? { color: "var(--color-accent)" } : undefined}>{k.v}</div>
-            <div className="stat-hint" style={k.signal ? { color: "var(--color-signal-700)" } : undefined}>{k.hint}</div>
+            <div className="stat-hint" style={k.signal ? { color: "var(--color-signal-700)" } : undefined}><T en={k.hint} th={"hintTh" in k && k.hintTh ? k.hintTh : k.hint} /></div>
           </div>
         ))}
       </div>
@@ -78,7 +78,7 @@ export default function ClientsPage() {
                   </td>
                   <td className="num">{c.adj}</td>
                   <td className="num" style={{ fontWeight: 600 }}>{c.tax ? F(c.tax) : "—"}</td>
-                  <td style={{ fontSize: 12 }}>{c.next}<span style={{ color: c.days <= 14 ? "var(--color-signal)" : "inherit", fontWeight: 800 }}> · {c.days}d</span></td>
+                  <td style={{ fontSize: 12 }}>{pnd(lang, c.next)}<span style={{ color: c.days <= 14 ? "var(--color-signal)" : "inherit", fontWeight: 800 }}> · {c.days}d</span></td>
                   <td><span className={riskCls(c.risk)}>{c.risk}</span></td>
                 </tr>
               ))}

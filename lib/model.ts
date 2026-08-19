@@ -1,5 +1,5 @@
 export type ProductMode = "corporate" | "advisor" | "defence";
-export type Lang = "en" | "th";
+export type Lang = "en" | "th" | "zh" | "ja";
 export type AdjStatus = "Approved" | "In review" | "Query" | "Draft";
 export type DiffKind = "P" | "T";
 export type Risk = "High" | "Medium" | "Low";
@@ -83,14 +83,14 @@ export const DEFENCE_USER = {
 };
 
 export const CLIENTS: Client[] = [
-  { id: "spp", name: "Siam Precision Parts Co., Ltd.", nameTh: "บริษัท สยามพรีซิชั่น พาร์ท จำกัด", tin: "0105548093271", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Ledger review", pct: 72, adj: 14, tax: 17248680, next: "ภ.ง.ด.51", days: 13, risk: "Medium", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
-  { id: "thanaporn", name: "Thanaporn Logistics PLC", nameTh: "บริษัท ธนพร โลจิสติกส์ จำกัด (มหาชน)", tin: "0107558000442", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Mapping", pct: 38, adj: 9, tax: 8420000, next: "ภ.ง.ด.51", days: 13, risk: "High", rateProfile: "listed", pnd51Method: "67bis2", boi: false },
-  { id: "bff", name: "Bangkok Fresh Foods Co., Ltd.", nameTh: "บริษัท บางกอก เฟรช ฟู้ดส์ จำกัด", tin: "0105542011883", period: "FY2026 (Mar)", fyLabel: "1 Apr 2025 – 31 Mar 2026", stage: "Provision", pct: 84, adj: 11, tax: 4165200, next: "ภ.ง.ด.50", days: 27, risk: "Low", rateProfile: "sme", pnd51Method: "67bis1", boi: false },
-  { id: "chao", name: "Chao Phraya Textile Co., Ltd.", nameTh: "บริษัท เจ้าพระยา เท็กซ์ไทล์ จำกัด", tin: "0105539012210", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Ingestion", pct: 15, adj: 3, tax: 0, next: "ภ.ง.ด.51", days: 13, risk: "High", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
-  { id: "nks", name: "NKS Electronics (Thailand)", nameTh: "บริษัท เอ็นเคเอส อีเล็คทรอนิคส์ จำกัด", tin: "0105547003319", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "BOI allocation", pct: 61, adj: 18, tax: 2980400, next: "ภ.ง.ด.51", days: 44, risk: "Medium", rateProfile: "normal", pnd51Method: "67bis1", boi: true },
-  { id: "isan", name: "Isan Agro Holdings Co., Ltd.", nameTh: "บริษัท อีสาน อะโกร โฮลดิ้งส์ จำกัด", tin: "0405558001124", period: "FY2025", fyLabel: "1 Jan – 31 Dec 2025", stage: "Filed", pct: 100, adj: 12, tax: 6112000, next: "ภ.ง.ด.50", days: 27, risk: "Low", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
+  { id: "spp", name: "Siam Precision Parts Co., Ltd.", nameTh: "บริษัท สยามพรีซิชั่น พาร์ท จำกัด", tin: "0105548093271", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Ledger review", pct: 72, adj: 14, tax: 17248680, next: "PND51", days: 13, risk: "Medium", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
+  { id: "thanaporn", name: "Thanaporn Logistics PLC", nameTh: "บริษัท ธนพร โลจิสติกส์ จำกัด (มหาชน)", tin: "0107558000442", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Mapping", pct: 38, adj: 9, tax: 8420000, next: "PND51", days: 13, risk: "High", rateProfile: "listed", pnd51Method: "67bis2", boi: false },
+  { id: "bff", name: "Bangkok Fresh Foods Co., Ltd.", nameTh: "บริษัท บางกอก เฟรช ฟู้ดส์ จำกัด", tin: "0105542011883", period: "FY2026 (Mar)", fyLabel: "1 Apr 2025 – 31 Mar 2026", stage: "Provision", pct: 84, adj: 11, tax: 4165200, next: "PND50", days: 27, risk: "Low", rateProfile: "sme", pnd51Method: "67bis1", boi: false },
+  { id: "chao", name: "Chao Phraya Textile Co., Ltd.", nameTh: "บริษัท เจ้าพระยา เท็กซ์ไทล์ จำกัด", tin: "0105539012210", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Ingestion", pct: 15, adj: 3, tax: 0, next: "PND51", days: 13, risk: "High", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
+  { id: "nks", name: "NKS Electronics (Thailand)", nameTh: "บริษัท เอ็นเคเอส อีเล็คทรอนิคส์ จำกัด", tin: "0105547003319", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "BOI allocation", pct: 61, adj: 18, tax: 2980400, next: "PND51", days: 44, risk: "Medium", rateProfile: "normal", pnd51Method: "67bis1", boi: true },
+  { id: "isan", name: "Isan Agro Holdings Co., Ltd.", nameTh: "บริษัท อีสาน อะโกร โฮลดิ้งส์ จำกัด", tin: "0405558001124", period: "FY2025", fyLabel: "1 Jan – 31 Dec 2025", stage: "Filed", pct: 100, adj: 12, tax: 6112000, next: "PND50", days: 27, risk: "Low", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
   { id: "phuket", name: "Phuket Resorts Group Co., Ltd.", nameTh: "บริษัท ภูเก็ต รีสอร์ท กรุ๊ป จำกัด", tin: "0835552014418", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Audit defence", pct: 90, adj: 21, tax: 11740000, next: "RD audit", days: 9, risk: "High", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
-  { id: "rama", name: "Rama IX Property Co., Ltd.", nameTh: "บริษัท พระราม 9 พร็อพเพอร์ตี้ จำกัด", tin: "0105563019927", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Ledger review", pct: 55, adj: 7, tax: 3204800, next: "ภ.ง.ด.51", days: 13, risk: "Medium", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
+  { id: "rama", name: "Rama IX Property Co., Ltd.", nameTh: "บริษัท พระราม 9 พร็อพเพอร์ตี้ จำกัด", tin: "0105563019927", period: "FY2026", fyLabel: "1 Jan – 31 Dec 2026", stage: "Ledger review", pct: 55, adj: 7, tax: 3204800, next: "PND51", days: 13, risk: "Medium", rateProfile: "normal", pnd51Method: "67bis1", boi: false },
 ];
 
 export const ENTITY = CLIENTS[0];
@@ -138,7 +138,7 @@ export const FILES = [
   { name: "FS_SPP_FY2025_audited.pdf", kind: "Financial statements", period: "FY2025", status: "Extracted", conf: 0.96, size: "48 pages" },
   { name: "FAR_SPP_2026.xlsx", kind: "Fixed-asset register", period: "FY2026", status: "Validated", conf: 0.98, size: "1,204 assets" },
   { name: "WHT_certs_Q1Q2_2026.pdf", kind: "WHT certificates", period: "H1 2026", status: "OCR (TH)", conf: 0.93, size: "41 certificates" },
-  { name: "PND50_SPP_FY2025_filed.pdf", kind: "Prior-year ภ.ง.ด.50", period: "FY2025", status: "Linked", conf: 0.99, size: "11 pages" },
+  { name: "PND50_SPP_FY2025_filed.pdf", kind: "Prior-year PND50", period: "FY2025", status: "Linked", conf: 0.99, size: "11 pages" },
   { name: "Entertainment_invoices_H1.zip", kind: "Invoices & receipts", period: "H1 2026", status: "Needs review", conf: 0.71, size: "36 documents" },
   { name: "Bonus_schedule_2026.xlsx", kind: "Payroll / benefits", period: "FY2026", status: "Validated", conf: 0.97, size: "312 employees" },
 ];
@@ -188,7 +188,7 @@ export const QUEUE = [
   { id: "ADJ-2026-0052", name: "Directors’ personal travel", kind: "Adjustment", amt: 262000, prep: "RISK24 feed", age: 1, status: "Awaiting review" },
   { id: "MAP-2026-004", name: "Chart-of-account mapping — 6 new accounts", kind: "Mapping", amt: 0, prep: "Nattaya P.", age: 1, status: "Awaiting review" },
   { id: "DTA-2026-001", name: "Deferred tax asset recognition", kind: "Provision", amt: 3903200, prep: "Kanit S.", age: 2, status: "CFO approval" },
-  { id: "EST-2026-051", name: "ภ.ง.ด.51 estimate and assumption file", kind: "Filing", amt: 74000000, prep: "Kanit S.", age: 1, status: "CFO approval" },
+  { id: "EST-2026-051", name: "PND51 estimate and assumption file", kind: "Filing", amt: 74000000, prep: "Kanit S.", age: 1, status: "CFO approval" },
 ];
 
 export const ACTIVITY_LOG = [
@@ -200,22 +200,6 @@ export const ACTIVITY_LOG = [
   { when: "15 Jul 2026 17:30", who: "Somsak T. (client)", what: "Uploaded Entertainment_invoices_H1.zip · 36 documents", hash: "2f54" },
 ];
 
-export const RULES: TaxRule[] = [
-  { id: "RULE-65T-04", name: "Entertainment expenses — statutory ceiling", sec: "s.65 ter (4)", version: "v3", effective: "01 Jan 2024", risk: "High", clients: 6, logic: "Deductible entertainment is capped at 0.3% of gross revenue or paid-up capital, whichever is higher, and at THB 10,000,000 in total. The excess is a permanent add-back.", evidence: "Tax invoice, business-purpose note, attendee or recipient record", tests: "12 / 12", legalUrl: "https://www.rd.go.th/827.html" },
-  { id: "RULE-65T-01", name: "Reserves and provisions not yet incurred", sec: "s.65 ter (1)", version: "v2", effective: "01 Jan 2023", risk: "Medium", clients: 11, logic: "Provisions, reserves and allowances are not deductible until the expense is actually incurred and determinable. Creates a temporary difference with a scheduled reversal.", evidence: "Provision movement schedule, utilisation evidence", tests: "9 / 9", legalUrl: "https://www.rd.go.th/827.html" },
-  { id: "RULE-65T-09", name: "Accrued expenses without a fixed obligation", sec: "s.65 ter (9)", version: "v2", effective: "01 Jan 2023", risk: "Medium", clients: 8, logic: "Accruals are deductible in the period the liability becomes fixed and determinable. Bonuses accrued but unpaid at year-end are added back and reversed on payment.", evidence: "Payroll register, board resolution, payment evidence", tests: "7 / 7", legalUrl: "https://www.rd.go.th/827.html" },
-  { id: "RULE-DEP-145", name: "Depreciation — tax rate ceilings", sec: "Royal Decree 145", version: "v4", effective: "01 Jan 2025", risk: "Low", clients: 14, logic: "Tax depreciation is limited to the rates in Royal Decree 145. Accounting depreciation in excess is added back; the shortfall is deducted in later periods.", evidence: "Fixed-asset register with tax and book bases", tests: "21 / 21", legalUrl: "https://www.rd.go.th/5939.html" },
-  { id: "RULE-BD-186", name: "Bad debt write-off conditions", sec: "Min. Reg. 186", version: "v3", effective: "01 Jan 2024", risk: "High", clients: 5, logic: "A write-off is deductible only where the prescribed collection steps for the debt size have been taken and documented before year-end.", evidence: "Demand letters, legal filings, debtor correspondence", tests: "11 / 12", legalUrl: "https://www.rd.go.th/5939.html" },
-  { id: "RULE-TP-71B", name: "Related-party pricing adjustment", sec: "s.71 bis", version: "v2", effective: "01 Jan 2024", risk: "High", clients: 9, logic: "Related-party charges must be at arm’s length. Amounts above the benchmarked range are treated as non-deductible, sourced from TP24.", evidence: "Benchmark study, intercompany agreement, service evidence", tests: "8 / 8", legalUrl: "https://www.rd.go.th/5939.html" },
-  { id: "RULE-FX-65B5", name: "Foreign-exchange gains and losses", sec: "s.65 bis (5)", version: "v2", effective: "01 Jan 2023", risk: "Medium", clients: 7, logic: "Unrealised differences on monetary items follow the prescribed rate basis; unrealised losses outside that basis are added back until settlement.", evidence: "Retranslation workpaper, bank rate evidence", tests: "6 / 6", legalUrl: "https://www.rd.go.th/5939.html" },
-  { id: "RULE-LOSS-65", name: "Tax-loss carry-forward and expiry", sec: "s.65", version: "v3", effective: "01 Jan 2024", risk: "Medium", clients: 12, logic: "Losses may be carried forward for five consecutive accounting periods and must be used in order of age. Expiry is tracked per period.", evidence: "Prior-year returns, loss schedule", tests: "10 / 10", legalUrl: "https://www.rd.go.th/5939.html" },
-  { id: "RULE-DON-65T3", name: "Donations and public-charity deductions", sec: "s.65 ter (3)", version: "v2", effective: "01 Jan 2023", risk: "Low", clients: 8, logic: "Public-charity donations are deductible up to 2% of net profit; education and sports donations follow their own limits. Excess is permanent.", evidence: "Receipts from approved organisations", tests: "9 / 9", legalUrl: "https://www.rd.go.th/827.html" },
-  { id: "RULE-BOI-ALLOC", name: "BOI and non-BOI cost allocation", sec: "BOI Act / RD guidance", version: "v1", effective: "01 Jan 2026", risk: "High", clients: 3, logic: "Shared costs are allocated between promoted and non-promoted activity on an approved, consistently applied basis. Exempt income is removed from taxable profit.", evidence: "BOI certificate, project reports, allocation basis memo", tests: "4 / 6", legalUrl: "https://www.rd.go.th/840.html" },
-  { id: "RULE-65T-06", name: "Fines, penalties and surcharges", sec: "s.65 ter (6)", version: "v2", effective: "01 Jan 2023", risk: "Low", clients: 14, logic: "Fines, penalties and tax surcharges are not deductible. Permanent add-back in full.", evidence: "Assessment notice, payment evidence", tests: "8 / 8", legalUrl: "https://www.rd.go.th/827.html" },
-  { id: "RULE-65T-13", name: "Personal and non-business expenses", sec: "s.65 ter (13)", version: "v2", effective: "01 Jan 2023", risk: "Medium", clients: 10, logic: "Private expenses of directors, shareholders or employees are not deductible. RISK24 detections are proposed, never posted.", evidence: "Expense analysis, business-purpose memo", tests: "6 / 6", legalUrl: "https://www.rd.go.th/827.html" },
-  { id: "RULE-EX-65B10", name: "Exempt dividend income", sec: "s.65 bis (10)", version: "v2", effective: "01 Jan 2023", risk: "Low", clients: 7, logic: "Dividends from a promoted or qualifying Thai company may be exempt where ownership and holding-period conditions are met.", evidence: "Share register, BOI certificate, dividend voucher", tests: "5 / 5", legalUrl: "https://www.rd.go.th/5939.html" },
-  { id: "RULE-67B-51", name: "ภ.ง.ด.51 estimated annual profit", sec: "s.67 bis (1)", version: "v3", effective: "01 Jan 2024", risk: "High", clients: 14, logic: "Ordinary companies estimate annual profit and pay one half. Understatement of more than 25% without reasonable cause produces a 20% surcharge on the shortfall (Order ป.50/2537).", evidence: "Board budget, H1 accounts, assumption file", tests: "9 / 9", legalUrl: "https://www.rd.go.th/3597.html" },
-];
 
 export const REQUESTS = [
   { id: "RD-2026-118", recd: "04 Aug 2026", due: "03 Sep 2026", topic: "Entertainment expenses FY2024–FY2025", status: "Drafting response", owner: "Kanit S." },
@@ -247,9 +231,9 @@ export const PND50_FIELDS = [
   { field: "Part 3 · tax losses utilised", amount: -12000000, src: "Loss schedule · FY2021 expires FY2026" },
   { field: "Part 4 · taxable profit", amount: 86243400, src: "CIT24-CALC 2026.2" },
   { field: "Part 4 · tax at 20%", amount: 17248680, src: "Standard rate · non-BOI · not SME" },
-  { field: "Credit · ภ.ง.ด.51", amount: -7400000, src: "Half-year payment due 31 Aug 2026" },
+  { field: "Credit · PND51", amount: -7400000, src: "Half-year payment due 31 Aug 2026" },
   { field: "Credit · withholding tax", amount: -2186450, src: "39 of 41 certificates matched" },
-  { field: "Tax payable", amount: 7662230, src: "Due with ภ.ง.ด.50 · 30 May 2027" },
+  { field: "Tax payable", amount: 7662230, src: "Due with PND50 · 30 May 2027" },
 ];
 
 export const ACCOUNTING_PROFIT = 84_500_000;

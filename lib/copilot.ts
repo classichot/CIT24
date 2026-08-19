@@ -1,4 +1,5 @@
-import { ADJUSTMENTS, RULES } from "./model";
+import { ADJUSTMENTS } from "./model";
+import { RULES } from "./rules";
 import { ENGINE_VERSION, type Provision, type Pnd51Sim } from "./engine";
 import { F } from "./format";
 
@@ -10,7 +11,7 @@ export type CopilotMsg = {
 
 export const SUGGESTIONS = [
   "Why is entertainment added back?",
-  "Will ภ.ง.ด.51 attract a surcharge?",
+  "Will PND51 attract a surcharge?",
   "Which reversals are due this year?",
 ];
 
@@ -33,9 +34,9 @@ export function answerCopilot(q: string, p: Provision, sim: Pnd51Sim): CopilotMs
   if (/51|surcharge|25%|ประมาณการ|ภ\.ง\.ด\.51|penalty/.test(t)) {
     return {
       role: "assistant",
-      text: `ภ.ง.ด.51 uses section 67 bis (1) for this entity — estimated annual profit, half payable by 31 Aug 2026.\n\nProjected taxable profit ${F(sim.taxable)}.\n75% floor ${F(sim.floor)}.\nHalf-year tax on the projection ${F(sim.halfProj)} versus declared half-year ${F(sim.halfDec)}.\nUnderstatement ${sim.shortPct.toFixed(1)}%.\n${sim.breach ? `This estimate breaches the 25% test. 20% surcharge exposure ${F(sim.surcharge)}. Recommended defensible estimate ${F(sim.recommended)}.` : "The declared estimate sits above the 75% floor. Keep the assumption file current."}\n\nI explain the test. The engine calculates the surcharge. I cannot submit the return.`,
+      text: `PND51 uses section 67 bis (1) for this entity — estimated annual profit, half payable by 31 Aug 2026.\n\nProjected taxable profit ${F(sim.taxable)}.\n75% floor ${F(sim.floor)}.\nHalf-year tax on the projection ${F(sim.halfProj)} versus declared half-year ${F(sim.halfDec)}.\nUnderstatement ${sim.shortPct.toFixed(1)}%.\n${sim.breach ? `This estimate breaches the 25% test. 20% surcharge exposure ${F(sim.surcharge)}. Recommended defensible estimate ${F(sim.recommended)}.` : "The declared estimate sits above the 75% floor. Keep the assumption file current."}\n\nI explain the test. The engine calculates the surcharge. I cannot submit the return.`,
       cites: [
-        { label: "ภ.ง.ด.51 simulator", href: "/pnd51" },
+        { label: "PND51 simulator", href: "/pnd51" },
         { label: "Order ป.50/2537", href: "https://www.rd.go.th/3597.html" },
         { label: "s.67 bis", href: "https://www.rd.go.th/5939.html" },
       ],
@@ -56,10 +57,10 @@ export function answerCopilot(q: string, p: Provision, sim: Pnd51Sim): CopilotMs
   if (/taxable|provision|กำไรสุทธิ|current tax|etr/.test(t)) {
     return {
       role: "assistant",
-      text: `Current-tax position (engine ${ENGINE_VERSION}):\n\nAccounting profit ${F(p.accountingProfit)}\n+ add-backs ${F(p.addBacks)}\n− deductions ${F(Math.abs(p.deductions))}\n= adjusted ${F(p.adjustedProfit)}\n− losses ${F(p.losses)}\n= taxable profit ${F(p.taxableProfit)}\n× 20% = current tax ${F(p.currentTax)}\n− ภ.ง.ด.51 ${F(p.pnd51Credit)} − WHT ${F(p.whtCredit)}\n= payable ${F(p.payable)}\nETR ${ (p.etr * 100).toFixed(2) }% versus statutory 20% — the gap is permanent items.\n\nClick any amount in Current tax for the full trail: return field → computation → adjustment → GL → evidence → rule → approval.`,
+      text: `Current-tax position (engine ${ENGINE_VERSION}):\n\nAccounting profit ${F(p.accountingProfit)}\n+ add-backs ${F(p.addBacks)}\n− deductions ${F(Math.abs(p.deductions))}\n= adjusted ${F(p.adjustedProfit)}\n− losses ${F(p.losses)}\n= taxable profit ${F(p.taxableProfit)}\n× 20% = current tax ${F(p.currentTax)}\n− PND51 ${F(p.pnd51Credit)} − WHT ${F(p.whtCredit)}\n= payable ${F(p.payable)}\nETR ${ (p.etr * 100).toFixed(2) }% versus statutory 20% — the gap is permanent items.\n\nClick any amount in Current tax for the full trail: return field → computation → adjustment → GL → evidence → rule → approval.`,
       cites: [
         { label: "Current tax", href: "/provision" },
-        { label: "ภ.ง.ด.50", href: "/pnd50" },
+        { label: "PND50", href: "/pnd50" },
         { label: "CIT24-CALC " + ENGINE_VERSION },
       ],
     };
@@ -96,7 +97,7 @@ export function answerCopilot(q: string, p: Provision, sim: Pnd51Sim): CopilotMs
 
   return {
     role: "assistant",
-    text: `CIT24 answers from the approved ledger and the versioned Thai CIT rule pack — not from general model memory.\n\nThis snapshot: taxable profit ${F(p.taxableProfit)}, current tax ${F(p.currentTax)}, payable ${F(p.payable)}.\n${ADJUSTMENTS.length} adjustments in the ledger. AI proposes and explains. The deterministic engine calculates. Nothing posts, files or changes a rule without a human.\n\nAsk about an adjustment, ภ.ง.ด.51 surcharge risk, a reversal, or a section 65 ter rule.`,
+    text: `CIT24 answers from the approved ledger and the versioned Thai CIT rule pack — not from general model memory.\n\nThis snapshot: taxable profit ${F(p.taxableProfit)}, current tax ${F(p.currentTax)}, payable ${F(p.payable)}.\n${ADJUSTMENTS.length} adjustments in the ledger. AI proposes and explains. The deterministic engine calculates. Nothing posts, files or changes a rule without a human.\n\nAsk about an adjustment, PND51 surcharge risk, a reversal, or a section 65 ter rule.`,
     cites: [
       { label: "Ledger", href: "/ledger" },
       { label: "Rule library", href: "/rules" },

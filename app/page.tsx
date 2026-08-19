@@ -39,7 +39,7 @@ export default function LoginPage() {
         </header>
         <div className="login-pane-body">
           <h1 className="login-headline">
-            Upload accounting records once. CIT24 creates the provision, ภ.ง.ด.51, ภ.ง.ด.50 and a defensible evidence trail.
+            Upload accounting records once. CIT24 creates the provision, PND51, PND50 and a defensible evidence trail.
           </h1>
           <p className="login-lede">
             An AI-assisted Thai Corporate Tax Operating System — not a PND50 form generator. AI extracts, classifies and explains. A deterministic rule engine calculates. Every figure drills down: return field → adjustment → GL → evidence → legal rule → approval.
@@ -57,7 +57,7 @@ export default function LoginPage() {
             </div>
             <div>
               <strong>13d</strong>
-              <span>ภ.ง.ด.51 due</span>
+              <span>PND51 due</span>
             </div>
           </div>
         </footer>

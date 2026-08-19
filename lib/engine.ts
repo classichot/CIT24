@@ -8,8 +8,6 @@ import {
   H1_REVENUE,
   PND51_CREDIT,
   ROLLFORWARD,
-  RULES,
-  TAX_LOSS_UTILISED,
   TAX_LOSSES_AVAILABLE,
   TAX_RATE,
   WHT_CREDIT,
@@ -17,6 +15,8 @@ import {
   type AdjStatus,
 } from "./model";
 import { money } from "./format";
+import { RULES } from "./rules";
+import { farTotals } from "./far";
 
 export type AuditNode = {
   id: string;
@@ -48,17 +48,30 @@ export type Provision = {
   audit: AuditNode;
 };
 
-export function liveAdjustments(statusOverride: Record<string, AdjStatus>): Adjustment[] {
-  return ADJUSTMENTS.map((a) => ({ ...a, status: statusOverride[a.id] ?? a.status }));
+export function liveAdjustments(statusOverride: Record<string, AdjStatus>, extras: Adjustment[] = []): Adjustment[] {
+  const far = farTotals();
+  const base = ADJUSTMENTS.map((a) => {
+    const status = statusOverride[a.id] ?? a.status;
+    if (a.id === "ADJ-2026-0045") {
+      return { ...a, status, acctAmt: far.bookDep, adjAmt: far.excess };
+    }
+    return { ...a, status };
+  });
+  const extra = extras
+    .filter((e) => !ADJUSTMENTS.some((a) => a.id === e.id))
+    .map((a) => ({ ...a, status: statusOverride[a.id] ?? a.status }));
+  return base.concat(extra);
 }
 
-export function computeProvision(adjs: Adjustment[] = ADJUSTMENTS): Provision {
+export function computeProvision(adjs: Adjustment[] = ADJUSTMENTS, opts?: { whtCredit?: number }): Provision {
   const addBacks = money(adjs.filter((a) => a.adjAmt > 0).reduce((s, a) => s + a.adjAmt, 0));
   const deductions = money(adjs.filter((a) => a.adjAmt < 0).reduce((s, a) => s + a.adjAmt, 0));
   const adjustedProfit = money(ACCOUNTING_PROFIT + addBacks + deductions);
-  const taxableProfit = money(adjustedProfit - TAX_LOSS_UTILISED);
+  const losses = money(Math.min(TAX_LOSSES_AVAILABLE, Math.max(0, adjustedProfit)));
+  const taxableProfit = money(adjustedProfit - losses);
   const currentTax = money(taxableProfit * TAX_RATE);
-  const payable = money(currentTax - PND51_CREDIT - WHT_CREDIT);
+  const whtCredit = opts?.whtCredit ?? WHT_CREDIT;
+  const payable = money(currentTax - PND51_CREDIT - whtCredit);
   const permanent = money(adjs.filter((a) => a.pt === "P").reduce((s, a) => s + a.adjAmt, 0));
   const temporary = money(adjs.filter((a) => a.pt === "T").reduce((s, a) => s + a.adjAmt, 0));
   const dta = money(ROLLFORWARD.reduce((s, r) => s + (r.open + r.add + r.rev) * TAX_RATE, 0));
@@ -85,7 +98,7 @@ export function computeProvision(adjs: Adjustment[] = ADJUSTMENTS): Provision {
       {
         id: "loss-cf",
         label: "Tax losses utilised",
-        amount: -TAX_LOSS_UTILISED,
+        amount: -losses,
         kind: "formula",
         ruleId: "RULE-LOSS-65",
         ruleVersion: "v3",
@@ -99,11 +112,11 @@ export function computeProvision(adjs: Adjustment[] = ADJUSTMENTS): Provision {
     addBacks,
     deductions,
     adjustedProfit,
-    losses: TAX_LOSS_UTILISED,
+    losses,
     taxableProfit,
     currentTax,
     pnd51Credit: PND51_CREDIT,
-    whtCredit: WHT_CREDIT,
+    whtCredit,
     payable,
     etr,
     permanent,
