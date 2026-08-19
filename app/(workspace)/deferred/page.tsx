@@ -85,7 +85,8 @@ export default function DeferredPage() {
       <div className="split-wide">
         <section className="col-pad border-r">
           <h5 className="sec-h"><T en="Temporary-difference movement" th="ตารางเคลื่อนไหวผลต่างชั่วคราว" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th><T en="Position" th="รายการ" /></th>
@@ -144,9 +145,11 @@ export default function DeferredPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           <h5 className="sec-h" style={{ marginTop: 24 }}><T en="Tax-base register" th="ทะเบียนฐานภาษี" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th><T en="Item" th="รายการ" /></th>
@@ -192,6 +195,7 @@ export default function DeferredPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
         <aside className="col-aside">
           <h5 className="sec-h" style={{ color: "var(--color-accent)" }}><T en="Enacted rates" th="อัตราที่ประกาศใช้" /></h5>

@@ -31,7 +31,8 @@ export default function EvidencePage() {
       <div className="split-wide" style={{ borderTop: "2px solid var(--color-divider)" }}>
         <section className="col-pad border-r">
           <h5 className="sec-h"><T en="Revenue Department request tracker" th="ติดตามคำขอกรมสรรพากร" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -55,6 +56,7 @@ export default function EvidencePage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
         <aside className="col-aside">
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em" }}>{req.id}</div>

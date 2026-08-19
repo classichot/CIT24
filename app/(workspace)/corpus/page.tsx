@@ -197,7 +197,8 @@ function CorpusPage() {
 
       <div className="split-wide">
         <section className="col-pad border-r">
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -226,6 +227,7 @@ function CorpusPage() {
               })}
             </tbody>
           </table>
+          </div>
         </section>
         {inst && (
           <aside className="col-aside">

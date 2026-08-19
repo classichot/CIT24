@@ -63,7 +63,8 @@ export default function DisclosurePage() {
       <div className="split-wide">
         <section className="col-pad border-r">
           <h5 className="sec-h"><T en="Major components of income-tax expense" th="องค์ประกอบหลักของค่าใช้จ่ายภาษีเงินได้" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead><tr><th><T en="Component" th="รายการ" /></th><th className="num">THB</th></tr></thead>
             <tbody>
               {note.filter((n) => deep || !/Pillar Two/.test(n.en)).map((n) => (
@@ -74,10 +75,12 @@ export default function DisclosurePage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           <h5 className="sec-h" style={{ marginTop: 24 }}><T en="Recognised deferred tax by origin" th="ภาษีรอตัดบัญชีที่รับรู้ตามที่มา" /></h5>
           {tas12Enabled ? (
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th><T en="Origin" th="ที่มา" /></th>
@@ -110,6 +113,7 @@ export default function DisclosurePage() {
               </tr>
             </tbody>
           </table>
+          </div>
           ) : (
             <p className="text-muted" style={{ fontSize: 13 }}><T en="Deferred-tax balances are not booked while TAS 12 deferred tax is off." th="ไม่บันทึกยอดภาษีรอตัดบัญชีขณะปิด ต.บ. 12" /></p>
           )}
@@ -117,7 +121,8 @@ export default function DisclosurePage() {
           {tas12Enabled && deep && (
             <>
           <h5 className="sec-h" style={{ marginTop: 24 }}><T en="Unrecognised deferred tax" th="ภาษีรอตัดบัญชีที่ไม่รับรู้" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead><tr><th><T en="Reason" th="เหตุผล" /></th><th className="num">THB</th></tr></thead>
             <tbody>
               {t.lines.filter((l) => l.unrecognised).map((l) => (
@@ -126,11 +131,13 @@ export default function DisclosurePage() {
               <tr><td><T en="Pillar Two (mandatory exception)" th="เสาหลักสอง (ข้อยกเว้นบังคับ)" /></td><td className="num">{F(t.pillarTwo.hypotheticalDtBlocked, true)}</td></tr>
             </tbody>
           </table>
+          </div>
             </>
           )}
 
           <h5 className="sec-h" style={{ marginTop: 24 }}><T en="Unused losses and credits — expiry" th="ผลขาดทุนและเครดิตที่ยังไม่ใช้ — วันหมดอายุ" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead><tr><th>ID</th><th><T en="Item" th="รายการ" /></th><th className="num"><T en="Amount" th="จำนวน" /></th><th><T en="Expires" th="หมดอายุ" /></th></tr></thead>
             <tbody>
               <tr><td>LOSS-21</td><td><T en="Tax loss FY2021 (utilised this year)" th="ขาดทุนปี 2564 (ใช้ปีนี้)" /></td><td className="num">{F(t.lossUtilised)}</td><td>FY2026</td></tr>
@@ -139,6 +146,7 @@ export default function DisclosurePage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
         <aside className="col-aside">
           <h5 className="sec-h"><T en="Rate applied" th="อัตราที่ใช้" /></h5>

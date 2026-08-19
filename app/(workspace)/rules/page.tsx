@@ -92,7 +92,8 @@ export default function RulesPage() {
 
       <div className="split-wide">
         <section className="col-pad border-r">
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -120,6 +121,7 @@ export default function RulesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
         <aside className="col-aside">
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "var(--color-accent)" }}>{rule.id} · {rule.version}</div>

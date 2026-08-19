@@ -55,7 +55,8 @@ export default function ReviewPage() {
       <div className="split-wide">
         <section className="col-pad border-r">
           <h5 className="sec-h"><T en="Adjustment sign-off" th="ลงนามรายการปรับปรุง" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -79,9 +80,11 @@ export default function ReviewPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           <h5 className="sec-h" style={{ marginTop: 24 }}><T en="Reviewer workload" th="ภาระงานผู้สอบทาน" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -107,6 +110,7 @@ export default function ReviewPage() {
               ))}
             </tbody>
           </table>
+          </div>
           {notes.length > 0 && (
             <div style={{ marginTop: 20 }}>
               <h5 className="sec-h"><T en="Review notes" th="บันทึกสอบทาน" /></h5>

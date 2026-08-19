@@ -38,7 +38,8 @@ export default function LossesPage() {
           <div className="stat-val" style={{ fontSize: 26 }}>{F(provision.taxableProfit)}</div>
         </div>
       </div>
-      <table className="table" style={{ marginTop: 20 }}>
+      <div className="table-wrap">
+        <table className="table" style={{ marginTop: 20 }}>
         <thead>
           <tr>
             <th><T en="Year of origin" th="ปีที่เกิด" /></th>
@@ -64,6 +65,7 @@ export default function LossesPage() {
           ))}
         </tbody>
       </table>
+      </div>
       <div className="callout" style={{ marginTop: 16, fontSize: 13 }}>
         <T
           en="CIT24-CALC applies losses oldest-first. The LLM never chooses a utilisation order. Changing an approved add-back recomputes this schedule immediately."

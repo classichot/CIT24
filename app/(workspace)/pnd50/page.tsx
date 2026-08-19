@@ -56,7 +56,8 @@ export default function Pnd50Page() {
           <p className="text-muted" style={{ fontSize: 12, marginBottom: 12 }}>
             <T en="Click an amount for one-click traceability. Direct e-filing is deferred until the Revenue Department interface is formally validated." th="คลิกจำนวนเพื่อตรวจสอบย้อนกลับ การยื่นอิเล็กทรอนิกส์โดยตรงจะเพิ่มเมื่อตรวจสอบส่วนต่อประสานกรมสรรพากรแล้ว" />
           </p>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead><tr><th><T en="PND50 field" th="ช่อง ภ.ง.ด.50" /></th><th><T en="Source" th="แหล่ง" /></th><th className="num">THB</th></tr></thead>
             <tbody>
               {fields.map((f) => (
@@ -72,13 +73,15 @@ export default function Pnd50Page() {
               ))}
             </tbody>
           </table>
+          </div>
           <div className="callout" style={{ marginTop: 16, fontSize: 13 }}>
             <T en="Tax computation memorandum: accounting profit" th="บันทึกการคำนวณภาษี: กำไรทางบัญชี" /> {F(p.accountingProfit)} <T en="reconciled to taxable profit" th="กระทบยอดเป็นกำไรทางภาษี" /> <Amount n={p.taxableProfit} audit={p.audit} /> <T en="under sections 65, 65 bis and 65 ter. Engine CIT24-CALC 2026.2. AI did not calculate this return." th="ตามมาตรา 65, 65 ทวิ และ 65 ตรี เครื่อง CIT24-CALC 2026.2 AI ไม่ได้คำนวณแบบนี้" />
           </div>
           {cur && prev && (
             <div style={{ marginTop: 20 }}>
               <h5 className="sec-h"><T en="Version comparison" th="เปรียบเทียบเวอร์ชัน" /> · v{cur.v} vs v{prev.v}</h5>
-              <table className="table">
+              <div className="table-wrap">
+                <table className="table">
                 <thead><tr><th /><th className="num">v{prev.v}</th><th className="num">v{cur.v}</th><th className="num">Δ</th></tr></thead>
                 <tbody>
                   {([
@@ -96,6 +99,7 @@ export default function Pnd50Page() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </section>

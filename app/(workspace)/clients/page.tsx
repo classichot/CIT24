@@ -50,7 +50,8 @@ export default function ClientsPage() {
             <h5 className="sec-h" style={{ margin: 0 }}><T en="Engagements" th="งานบริการลูกค้า" /></h5>
             <span className="text-muted" style={{ fontSize: 11 }}><T en="Click a row to open that client's tax close" th="คลิกแถวเพื่อเปิดงานปิดภาษีของลูกค้า" /></span>
           </div>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th style={{ width: "30%" }}><T en="Client" th="ลูกค้า" /></th>
@@ -84,6 +85,7 @@ export default function ClientsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
         <aside className="col-aside">
           <div>

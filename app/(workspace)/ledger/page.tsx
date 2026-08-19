@@ -93,7 +93,8 @@ export default function LedgerPage() {
 
       <div className="split-wide">
         <section className="col-pad border-r">
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th style={{ width: 96 }}>ID</th>
@@ -137,6 +138,7 @@ export default function LedgerPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
         <aside className="col-aside" style={{ position: "sticky", top: 0 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>

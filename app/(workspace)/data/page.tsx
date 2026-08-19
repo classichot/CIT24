@@ -112,7 +112,8 @@ export default function DataPage() {
             </div>
 
             <h5 className="sec-h"><T en="Ingested sources" th="แหล่งข้อมูลที่นำเข้า" /></h5>
-            <table className="table">
+            <div className="table-wrap">
+              <table className="table">
               <thead>
                 <tr>
                   <th style={{ width: "28%" }}><T en="File" th="ไฟล์" /></th>
@@ -141,6 +142,7 @@ export default function DataPage() {
                 ))}
               </tbody>
             </table>
+            </div>
             {selected && <FileScoreDetail file={selected} lang={lang} />}
           </section>
           <section className="col-pad border-r" style={{ paddingBottom: 20 }}>
@@ -153,7 +155,8 @@ export default function DataPage() {
               <div className="stat-cell"><div className="stat-label"><T en="Unmatched" th="ยังไม่จับคู่" /></div><div className="stat-val" style={{ fontSize: 22, color: whtUnmatched ? "var(--color-accent)" : undefined }}>{F(whtUnmatched)}</div></div>
               <div className="stat-cell"><div className="stat-label"><T en="Certificates" th="หนังสือรับรอง" /></div><div className="stat-val" style={{ fontSize: 22 }}>{certs.filter((c) => c.matched).length}/{certs.length}</div></div>
             </div>
-            <table className="table">
+            <div className="table-wrap">
+              <table className="table">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -181,10 +184,12 @@ export default function DataPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </section>
           <section style={{ padding: "4px 0 40px" }}>
             <h5 className="sec-h"><T en="Data-quality controls" th="การควบคุมคุณภาพข้อมูล" /></h5>
-            <table className="table">
+            <div className="table-wrap">
+              <table className="table">
               <thead>
                 <tr>
                   <th style={{ width: "30%" }}><T en="Control" th="การควบคุม" /></th>
@@ -204,6 +209,7 @@ export default function DataPage() {
                 ))}
               </tbody>
             </table>
+            </div>
             <div className="text-muted" style={{ fontSize: 11, marginTop: 10, maxWidth: "60ch", lineHeight: 1.6 }}>
               <T en="Nothing posts to the tax computation until every control is passed or a documented exception is accepted by the reviewer." th="ไม่มีข้อมูลใดเข้าสู่การคำนวณภาษีจนกว่าการควบคุมทุกข้อจะผ่าน หรือผู้สอบทานยอมรับข้อยกเว้นที่มีเอกสารรองรับ" />
             </div>

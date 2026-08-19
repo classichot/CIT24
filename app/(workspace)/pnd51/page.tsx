@@ -141,7 +141,8 @@ export default function Pnd51Page() {
               </div>
               <div style={{ marginTop: 24 }}>
                 <h5 className="sec-h"><T en="Sensitivity — understatement % against the declared estimate" th="การวิเคราะห์ความไหว — ร้อยละที่ประมาณการต่ำไป" /></h5>
-                <table className="table">
+                <div className="table-wrap">
+                  <table className="table">
                   <thead>
                     <tr>
                       <th />
@@ -163,6 +164,7 @@ export default function Pnd51Page() {
                     ))}
                   </tbody>
                 </table>
+                </div>
                 <div className="text-muted" style={{ fontSize: 11, marginTop: 8 }}><T en="Cells above 25% are surcharge territory. Red means the declared estimate cannot be defended at that outcome." th="ช่องที่เกินร้อยละ 25 คือพื้นที่เสี่ยงเงินเพิ่ม สีแดงหมายถึงประมาณการที่จะยื่นไม่สามารถชี้แจงได้ในผลลัพธ์นั้น" /></div>
               </div>
             </>
@@ -191,7 +193,8 @@ export default function Pnd51Page() {
           </div>
           <div>
             <h5 className="sec-h"><T en="Prior-year comparison" th="เปรียบเทียบกับปีก่อน" /></h5>
-            <table className="table" style={{ fontSize: 12 }}>
+            <div className="table-wrap">
+              <table className="table" style={{ fontSize: 12 }}>
               <tbody>
                 <tr><td><T en="FY2025 PND51 estimate" th="ประมาณการ ภ.ง.ด.51 ปี 2568" /></td><td className="num">58,000,000</td></tr>
                 <tr><td><T en="FY2025 PND50 actual" th="ผลจริง ภ.ง.ด.50 ปี 2568" /></td><td className="num">63,180,000</td></tr>
@@ -199,10 +202,12 @@ export default function Pnd51Page() {
                 <tr><td><T en="Surcharge incurred" th="เงินเพิ่มที่เกิดขึ้น" /></td><td className="num">—</td></tr>
               </tbody>
             </table>
+            </div>
           </div>
           <div>
             <h5 className="sec-h"><T en="Form fields" th="ช่องกรอกในแบบ" /></h5>
-            <table className="table" style={{ fontSize: 12 }}>
+            <div className="table-wrap">
+              <table className="table" style={{ fontSize: 12 }}>
               <tbody>
                 <tr><td><T en="PND51" th="ภ.ง.ด.51" /> <T en="item 1 — estimated net profit" th="ข้อ 1 — ประมาณการกำไรสุทธิ" /></td><td className="num" style={{ fontWeight: 600 }}>{F(pnd51.declared)}</td></tr>
                 <tr><td><T en="item 2 — tax at 20%" th="ข้อ 2 — ภาษี 20%" /></td><td className="num">{F(sim.declaredTax)}</td></tr>
@@ -210,6 +215,7 @@ export default function Pnd51Page() {
                 <tr><td><T en="item 4 — WHT credit" th="ข้อ 4 — เครดิตภาษีหัก ณ ที่จ่าย" /></td><td className="num">1,043,200</td></tr>
               </tbody>
             </table>
+            </div>
           </div>
         </aside>
       </div>

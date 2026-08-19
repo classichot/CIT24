@@ -107,7 +107,8 @@ export default function MappingPage() {
           ))}
 
           <h5 className="sec-h" style={{ marginTop: 28 }}><T en="Mapped accounts (sample + session)" th="บัญชีที่จับคู่แล้ว (ตัวอย่าง + รอบนี้)" /></h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th>GL</th>
@@ -129,6 +130,7 @@ export default function MappingPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </section>
         <aside className="col-aside">
           <h5 className="sec-h"><T en="Mapping history" th="ประวัติการจับคู่" /></h5>

@@ -55,7 +55,8 @@ export default function FarPage() {
         </div>
       </div>
 
-      <table className="table" style={{ marginTop: 16 }}>
+      <div className="table-wrap">
+        <table className="table" style={{ marginTop: 16 }}>
         <thead>
           <tr>
             <th>ID</th>
@@ -96,6 +97,7 @@ export default function FarPage() {
           </tr>
         </tbody>
       </table>
+      </div>
 
       <div className="callout" style={{ marginTop: 16, fontSize: 13 }}>
         <T

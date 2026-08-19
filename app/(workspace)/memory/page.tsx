@@ -45,7 +45,8 @@ export default function MemoryPage() {
         />{" "}
         <Link href="/corpus"><T en="Open regulation corpus" th="เปิดคลังกฎหมาย" zh="打开法规库" ja="法令コーパスを開く" /></Link>
       </div>
-      <table className="table" style={{ marginTop: 20 }}>
+      <div className="table-wrap">
+        <table className="table" style={{ marginTop: 20 }}>
         <thead>
           <tr>
             <th><T en="Account" th="บัญชี" zh="科目" ja="勘定" /></th>
@@ -65,13 +66,15 @@ export default function MemoryPage() {
           ))}
         </tbody>
       </table>
+      </div>
 
       {priorImported && (
         <>
           <h5 className="sec-h" style={{ marginTop: 28 }}>
             <T en="Imported FY2025 ledger · 12 positions (append-only)" th="ทะเบียนปี 2568 ที่นำเข้า · 12 รายการ (เพิ่มอย่างเดียว)" zh="已导入的 FY2025 台账 · 12 项（只追加）" ja="取込済FY2025台帳 · 12件（追記のみ）" />
           </h5>
-          <table className="table">
+          <div className="table-wrap">
+            <table className="table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -100,6 +103,7 @@ export default function MemoryPage() {
               })}
             </tbody>
           </table>
+          </div>
         </>
       )}
 
