@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CLIENTS, FEED } from "@/lib/model";
+import { FEED } from "@/lib/model";
 import { useStore } from "@/lib/store";
 import { PageHead, riskCls } from "@/components/PageHead";
 import { T, pnd } from "@/lib/i18n";
 import { F } from "@/lib/format";
 
 export default function ClientsPage() {
-  const { setClientId, ask, lang } = useStore();
+  const { setClientId, ask, lang, clients } = useStore();
   const router = useRouter();
 
   return (
@@ -18,12 +18,12 @@ export default function ClientsPage() {
         kickerTh="โหมดที่ปรึกษา · แดชบอร์ดงานบริการ"
         titleEn="Client portfolio"
         titleTh="พอร์ตลูกค้า"
-        subEn="14 clients · 9 open engagements · continuous close through July 2026"
-        subTh="ลูกค้า 14 ราย · งาน 9 งาน · ปิดภาษีต่อเนื่องถึงเดือนกรกฎาคม 2569"
+        subEn={`${clients.length} clients · click a row to open the tax close · add a new file from New engagement`}
+        subTh={`${clients.length} ลูกค้า · คลิกแถวเพื่อเปิดงานปิดภาษี · เพิ่มแฟ้มใหม่ที่งานใหม่`}
         actions={
           <>
             <button className="btn btn-secondary" onClick={() => router.push("/review")}><T en="Reviewer workload" th="ภาระงานผู้สอบทาน" /></button>
-            <button className="btn btn-primary" onClick={() => router.push("/pnd51")}><T en="Open PND51 simulator" th="เปิดแบบจำลอง ภ.ง.ด.51" /></button>
+            <button className="btn btn-primary" onClick={() => router.push("/onboard")}><T en="Add engagement" th="เพิ่มงานบริการ" /></button>
           </>
         }
       />
@@ -64,8 +64,8 @@ export default function ClientsPage() {
               </tr>
             </thead>
             <tbody>
-              {CLIENTS.map((c) => (
-                <tr key={c.id} className="clickable" onClick={() => { setClientId(c.id); router.push("/overview"); }}>
+              {clients.map((c) => (
+                <tr key={c.id} className="clickable" onClick={() => { setClientId(c.id); router.push(c.custom ? "/data" : "/overview"); }}>
                   <td>
                     <div style={{ fontWeight: 600 }}>{c.name}</div>
                     <div className="text-muted" style={{ fontSize: 11 }}>{c.nameTh}</div>

@@ -23,6 +23,8 @@ export type Client = {
   rateProfile: "normal" | "sme" | "listed";
   pnd51Method: "67bis1" | "67bis2";
   boi: boolean;
+  /** True when created in this workspace (not a seed demo row). */
+  custom?: boolean;
 };
 
 export type Adjustment = {

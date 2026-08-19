@@ -14,15 +14,18 @@ import {
   ADVISOR_USER,
   CORPORATE_USER,
   DEFENCE_USER,
+  CLIENTS,
   FILES,
   type AdjStatus,
   type Adjustment,
+  type Client,
   type Lang,
   type ProductMode,
   type LawMode,
 } from "./model";
 import { computeProvision, liveAdjustments, type AuditNode, type Provision } from "./engine";
 import { computeBoiPnl, scenarioTax, type AllocDriver, type BoiPnl } from "./boi";
+import { draftToClient, ENGAGEMENT_KEY, parseStoredClients, tinOk, tinTaken, type EngagementDraft } from "./onboard";
 import { hydrateSeedFile, ingestBrowserFiles, type IngestedFile } from "./ingest";
 import {
   ACCOUNT_SEED,
@@ -84,6 +87,8 @@ type Store = {
   setLang: (l: Lang) => void;
   clientId: string;
   setClientId: (id: string) => void;
+  clients: Client[];
+  addEngagement: (draft: EngagementDraft) => string | null;
   toast: string | null;
   flash: (m: string) => void;
   navOpen: boolean;
@@ -199,6 +204,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ProductMode>("advisor");
   const [lang, setLangState] = useState<Lang>("en");
   const [clientId, setClientIdState] = useState("spp");
+  const [extraClients, setExtraClients] = useState<Client[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(true);
@@ -297,6 +303,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (l === "th" || l === "en" || l === "zh" || l === "ja") setLangState(l);
     const c = localStorage.getItem("cit24_client");
     if (c) setClientIdState(c);
+    setExtraClients(parseStoredClients(localStorage.getItem(ENGAGEMENT_KEY)));
     const law = localStorage.getItem("cit24_law");
     const nextLaw: LawMode = law === "complex" ? "complex" : "compliance";
     setLawModeState(nextLaw);
@@ -339,6 +346,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("cit24_lang", l);
   }, []);
 
+  const clients = useMemo(() => [...CLIENTS, ...extraClients], [extraClients]);
+
   const setClientId = useCallback((id: string) => {
     setClientIdState(id);
     localStorage.setItem("cit24_client", id);
@@ -352,6 +361,40 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const logEvent = useCallback((what: string, who = actor.name) => {
     setLog((l) => appendLog(l, who, what));
   }, [actor.name]);
+
+  const addEngagement = useCallback((draft: EngagementDraft) => {
+    if (mode === "defence") {
+      flash("Audit-defence mode is read-only — switch to Advisory to add an engagement");
+      return null;
+    }
+    const name = draft.name.trim();
+    const tin = draft.tin.replace(/\s/g, "");
+    if (!name) {
+      flash("Legal name is required");
+      return null;
+    }
+    if (!tinOk(tin)) {
+      flash("TIN must be 13 digits");
+      return null;
+    }
+    if (tinTaken(tin, extraClients)) {
+      flash("That TIN is already on the portfolio");
+      return null;
+    }
+    const row = draftToClient(draft, extraClients);
+    const next = [row, ...extraClients];
+    setExtraClients(next);
+    localStorage.setItem(ENGAGEMENT_KEY, JSON.stringify(next));
+    if (mode !== "advisor") {
+      setModeState("advisor");
+      localStorage.setItem("cit24_mode", "advisor");
+    }
+    setClientIdState(row.id);
+    localStorage.setItem("cit24_client", row.id);
+    logEvent(`Engagement opened · ${row.name} · TIN ${row.tin} · ${row.period} · onboarding`);
+    flash(`${row.name} added. Next: drop the close pack on Data & mapping.`);
+    return row.id;
+  }, [mode, extraClients, flash, logEvent]);
 
   const ask = useCallback((q: string) => {
     setPendingAsk(q);
@@ -937,7 +980,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang,
-      clientId, setClientId, toast, flash, navOpen, setNavOpen, copilotOpen, setCopilotOpen,
+      clientId, setClientId, clients, addEngagement, toast, flash, navOpen, setNavOpen, copilotOpen, setCopilotOpen,
       pendingAsk, ask, consumeAsk, audit, openAudit: setAudit, closeAudit: () => setAudit(null),
       statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount,
       mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl,
@@ -951,7 +994,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       lawAlerts, lawReviewOpen, setLawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount,
       boiEnabled, setBoiEnabled, rentDriver, setRentDriver, approvedBoiRecs, approveBoiRec, certExtracted, extractBoiCert, boiPnl, scenario,
     }),
-    [ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang, clientId, setClientId, toast, flash, navOpen, copilotOpen, pendingAsk, ask, consumeAsk, audit, statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount, mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl, locked, toggleLock, materiality, pnd51, setPnd51, evid, toggleEv, fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal, runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50, priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly, lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument, lawAlerts, lawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount, boiEnabled, setBoiEnabled, rentDriver, setRentDriver, approvedBoiRecs, approveBoiRec, certExtracted, extractBoiCert, boiPnl, scenario],
+    [ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang, clientId, setClientId, clients, addEngagement, toast, flash, navOpen, copilotOpen, pendingAsk, ask, consumeAsk, audit, statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount, mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl, locked, toggleLock, materiality, pnd51, setPnd51, evid, toggleEv, fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal, runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50, priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly, lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument, lawAlerts, lawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount, boiEnabled, setBoiEnabled, rentDriver, setRentDriver, approvedBoiRecs, approveBoiRec, certExtracted, extractBoiCert, boiPnl, scenario],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

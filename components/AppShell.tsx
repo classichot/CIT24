@@ -25,9 +25,10 @@ import {
   Sparkles,
   Timer,
   Upload,
+  UserPlus,
   X,
 } from "lucide-react";
-import { ADVISOR_USER, CLIENTS, CORPORATE_USER, DEFENCE_USER, type Lang } from "@/lib/model";
+import { ADVISOR_USER, CORPORATE_USER, DEFENCE_USER, type Lang } from "@/lib/model";
 import { useStore } from "@/lib/store";
 import { ModeToggle } from "@/components/ModeToggle";
 import { LangToggle } from "@/components/LangToggle";
@@ -42,6 +43,7 @@ import { useEffect } from "react";
 const NAV = [
   { group: "Workspace", groupTh: "พื้นที่ทำงาน", groupZh: "工作区", groupJa: "ワークスペース", items: [
     { href: "/clients", en: "Client portfolio", th: "พอร์ตลูกค้า", zh: "客户组合", ja: "顧客ポートフォリオ", icon: Building2, advisor: true },
+    { href: "/onboard", en: "New engagement", th: "งานใหม่", zh: "新委托", ja: "新規案件", icon: UserPlus },
     { href: "/overview", en: "Tax close", th: "ปิดภาษี", zh: "税务关账", ja: "税務クローズ", icon: LayoutGrid },
     { href: "/entity", en: "Entity profile", th: "โปรไฟล์กิจการ", zh: "主体档案", ja: "事業体プロファイル", icon: Building2 },
   ]},
@@ -95,6 +97,7 @@ const TABS = [
 const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja?: string }; title: { en: string; th: string; zh?: string; ja?: string } }> = {
   "/overview": { kicker: { en: "Corporate mode", th: "โหมดองค์กร", zh: "企业模式", ja: "コーポレート" }, title: { en: "Tax close", th: "ปิดภาษี", zh: "税务关账", ja: "税務クローズ" } },
   "/clients": { kicker: { en: "Advisory mode", th: "โหมดที่ปรึกษา", zh: "顾问模式", ja: "アドバイザリー" }, title: { en: "Client portfolio", th: "พอร์ตลูกค้า", zh: "客户组合", ja: "顧客ポートフォリオ" } },
+  "/onboard": { kicker: { en: "Onboarding", th: "รับเข้าแพลตฟอร์ม", zh: "接入", ja: "オンボード" }, title: { en: "New engagement", th: "งานบริการใหม่", zh: "新委托", ja: "新規案件" } },
   "/entity": { kicker: { en: "Entity", th: "กิจการ", zh: "主体", ja: "事業体" }, title: { en: "Tax profile", th: "โปรไฟล์ภาษี", zh: "税务档案", ja: "税務プロファイル" } },
   "/data": { kicker: { en: "Step 1", th: "ขั้นตอน 1", zh: "步骤 1", ja: "ステップ1" }, title: { en: "Data & mapping", th: "ข้อมูลและการจับคู่", zh: "数据与映射", ja: "データとマッピング" } },
   "/mapping": { kicker: { en: "Step 1", th: "ขั้นตอน 1", zh: "步骤 1", ja: "ステップ1" }, title: { en: "Account mapping", th: "จับคู่ผังบัญชี", zh: "科目映射", ja: "勘定マッピング" } },
@@ -132,9 +135,9 @@ function isActive(path: string, href: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const router = useRouter();
-  const { logout, toast, navOpen, setNavOpen, mode, clientId, setCopilotOpen, copilotOpen, lang, adjustments, lawMode, boiEnabled } = useStore();
+  const { logout, toast, navOpen, setNavOpen, mode, clientId, setCopilotOpen, copilotOpen, lang, adjustments, lawMode, boiEnabled, clients } = useStore();
   const user = mode === "advisor" ? ADVISOR_USER : mode === "defence" ? DEFENCE_USER : CORPORATE_USER;
-  const client = CLIENTS.find((c) => c.id === clientId) ?? CLIENTS[0];
+  const client = clients.find((c) => c.id === clientId) ?? clients[0];
   const title = TITLES[path] || { kicker: { en: "CIT24", th: "CIT24" }, title: { en: "Thai CIT OS", th: "ระบบภาษีนิติบุคคล", zh: "泰国企业所得税系统", ja: "タイ法人税OS" } };
 
   useEffect(() => { setNavOpen(false); }, [path, setNavOpen]);

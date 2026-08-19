@@ -12,7 +12,7 @@ import { T, pnd } from "@/lib/i18n";
 import { F } from "@/lib/format";
 
 export default function DataPage() {
-  const { files, ingestFiles, addJulyGl, unmapped, mappedCount, acceptMap, changeMap, ask, lang, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, mappingLocked, runDetection, detections } = useStore();
+  const { files, ingestFiles, addJulyGl, unmapped, mappedCount, acceptMap, changeMap, ask, lang, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, mappingLocked, runDetection, detections, clients, clientId } = useStore();
   const pack = useMemo(() => evaluatePack(files), [files]);
   const [sel, setSel] = useState<string | null>(null);
   const selected = files.find((f) => f.id === sel) ?? files.find((f) => !f.loadedOk) ?? files[0];
@@ -41,6 +41,13 @@ export default function DataPage() {
           </>
         }
       />
+
+      {clients.find((c) => c.id === clientId)?.custom && (
+        <div className="callout" style={{ marginTop: 16, fontSize: 13 }}>
+          <strong>{clients.find((c) => c.id === clientId)?.name}</strong>{" "}
+          <T en="— drop trial balance, GL, FS, FAR, WHT certificates and prior PND50. Required files need score ≥ 70." th="— วางงบทดลอง บัญชีแยกประเภท งบการเงิน ทะเบียนสินทรัพย์ หนังสือรับรองหัก ณ ที่จ่าย และ ภ.ง.ด.50 ปีก่อน ไฟล์จำเป็นต้องคะแนน ≥ 70" />
+        </div>
+      )}
 
       <div className="stat-row" style={{ gridTemplateColumns: "repeat(4, 1fr)", borderTop: "2px solid var(--color-divider)" }}>
         <div className="stat-cell">

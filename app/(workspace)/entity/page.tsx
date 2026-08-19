@@ -1,6 +1,5 @@
 "use client";
 
-import { CLIENTS } from "@/lib/model";
 import { ENACTED_RATES } from "@/lib/tas12";
 import { useStore } from "@/lib/store";
 import { PageHead } from "@/components/PageHead";
@@ -9,8 +8,8 @@ import { F } from "@/lib/format";
 import Link from "next/link";
 
 export default function EntityPage() {
-  const { clientId, losses, provision, whtCredit, locked, lawMode, boiEnabled } = useStore();
-  const c = CLIENTS.find((x) => x.id === clientId) ?? CLIENTS[0];
+  const { clientId, losses, provision, whtCredit, locked, lawMode, boiEnabled, clients } = useStore();
+  const c = clients.find((x) => x.id === clientId) ?? clients[0];
   const deep = lawMode === "complex";
 
   return (

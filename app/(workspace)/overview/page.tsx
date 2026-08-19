@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CLIENTS, FEED } from "@/lib/model";
+import { FEED } from "@/lib/model";
 import { Amount } from "@/components/Amount";
 import { FlowBar } from "@/components/FlowBar";
 import { PageHead, riskCls } from "@/components/PageHead";
@@ -13,7 +13,7 @@ import { LawAlertBanner } from "@/components/LawReview";
 import { LawToggle } from "@/components/LawToggle";
 
 export default function OverviewPage() {
-  const { mode, ask, lang, provision: p, reversals, lawMode } = useStore();
+  const { mode, ask, lang, provision: p, reversals, lawMode, clients, clientId, setClientId } = useStore();
   const router = useRouter();
 
   return (
@@ -33,6 +33,7 @@ export default function OverviewPage() {
         actions={
           <>
             <LawToggle />
+            <Link href="/onboard" className="btn btn-secondary"><T en="Add engagement" th="เพิ่มงาน" /></Link>
             <Link href="/boi" className="btn btn-secondary"><T en="BOI desk" th="โต๊ะ BOI" /></Link>
             <Link href="/playbook" className="btn btn-secondary"><T en="Mode playbook" th="คู่มือโหมด" /></Link>
             <Link href="/review" className="btn btn-secondary"><T en="Review queue" th="คิวสอบทาน" /></Link>
@@ -42,6 +43,14 @@ export default function OverviewPage() {
       />
 
       <LawAlertBanner />
+
+      {clients.find((c) => c.id === clientId)?.custom && (
+        <div className="callout" style={{ margin: "16px 0 0", fontSize: 13 }}>
+          <strong>{clients.find((c) => c.id === clientId)?.name}</strong>{" "}
+          <T en="is in onboarding. Drop the close pack, map the chart, then post the ledger. Numbers below are still the Siam Precision Parts demo engine until this pack is posted." th="อยู่ในขั้นตอนรับเข้า วางชุดปิด จับคู่ผัง แล้วบันทึกทะเบียน ตัวเลขด้านล่างยังเป็นเครื่องคำนวณตัวอย่าง สยามพรีซิชั่น จนกว่าชุดนี้จะถูกบันทึก" />
+          {" "}<Link href="/data"><T en="Open Data & mapping" th="เปิดข้อมูลและการจับคู่" /> →</Link>
+        </div>
+      )}
 
       <div className="callout" style={{ margin: "16px 0 0" }}>
         <strong><T en="Deterministic engine CIT24-CALC 2026.2." th="เครื่องคำนวณ CIT24-CALC 2026.2" /></strong>{" "}
@@ -96,8 +105,8 @@ export default function OverviewPage() {
               </tr>
             </thead>
             <tbody>
-              {(mode === "advisor" ? CLIENTS : CLIENTS.slice(0, 1)).map((c) => (
-                <tr key={c.id} className="clickable" onClick={() => router.push("/ledger")}>
+              {(mode === "advisor" ? clients : clients.filter((c) => c.id === clientId || c.id === "spp").slice(0, 1)).map((c) => (
+                <tr key={c.id} className="clickable" onClick={() => { setClientId(c.id); router.push(c.custom ? "/data" : "/ledger"); }}>
                   <td>
                     <div style={{ fontWeight: 600 }}>{c.name}</div>
                     <div className="text-muted" style={{ fontSize: 11 }}>{c.nameTh}</div>
