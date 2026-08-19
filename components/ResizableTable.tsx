@@ -43,7 +43,13 @@ export function ResizableTable({
   widthsRef.current = widths;
 
   useEffect(() => {
-    setWidths(readStored(storageKey, columns.length));
+    const stored = readStored(storageKey, columns.length);
+    if (stored) {
+      setWidths(stored);
+      return;
+    }
+    const id = requestAnimationFrame(() => setWidths(measure()));
+    return () => cancelAnimationFrame(id);
   }, [storageKey, columns.length]);
 
   function persist(next: number[]) {

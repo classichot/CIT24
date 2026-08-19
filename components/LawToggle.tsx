@@ -9,16 +9,19 @@ const OPTS: { id: LawMode; en: string; th: string; zh: string; ja: string }[] = 
   { id: "complex", en: "Complex", th: "ครบทุกกฎหมาย", zh: "完整", ja: "コンプレックス" },
 ];
 
-export function LawToggle() {
+export function LawToggle({ variant = "header" }: { variant?: "header" | "block" }) {
   const { lawMode, setLawMode } = useStore();
   return (
-    <div className="seg" role="group" aria-label="Law depth">
-      {OPTS.map((o) => (
-        <label key={o.id} className="seg-opt" title={o.en}>
-          <input type="radio" name="law" checked={lawMode === o.id} onChange={() => setLawMode(o.id)} />
-          <span><T en={o.en} th={o.th} zh={o.zh} ja={o.ja} /></span>
-        </label>
-      ))}
+    <div className={`law-toggle law-toggle-${variant}`} role="group" aria-label="Law depth">
+      <span className="law-toggle-kicker"><T en="Law depth" th="ความลึกกฎหมาย" zh="法规深度" ja="法令の深さ" /></span>
+      <div className="seg">
+        {OPTS.map((o) => (
+          <label key={o.id} className="seg-opt" title={o.en}>
+            <input type="radio" name={`law-${variant}`} checked={lawMode === o.id} onChange={() => setLawMode(o.id)} />
+            <span><T en={o.en} th={o.th} zh={o.zh} ja={o.ja} /></span>
+          </label>
+        ))}
+      </div>
     </div>
   );
 }

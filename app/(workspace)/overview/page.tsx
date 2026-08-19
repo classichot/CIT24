@@ -10,6 +10,7 @@ import { T, pnd } from "@/lib/i18n";
 import { F } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import { LawAlertBanner } from "@/components/LawReview";
+import { LawToggle } from "@/components/LawToggle";
 
 export default function OverviewPage() {
   const { mode, ask, lang, provision: p, reversals, lawMode } = useStore();
@@ -31,6 +32,7 @@ export default function OverviewPage() {
           : "นำเข้าครั้งเดียว CIT24 สร้างประมาณการ ภ.ง.ด.51 ภ.ง.ด.50 และจำทุกจุดยืนไว้สำหรับปีหน้า"}
         actions={
           <>
+            <LawToggle />
             <Link href="/review" className="btn btn-secondary"><T en="Review queue" th="คิวสอบทาน" /></Link>
             <Link href="/pnd51" className="btn btn-primary"><T en="Open PND51 simulator" th="เปิดแบบจำลอง ภ.ง.ด.51" /></Link>
           </>

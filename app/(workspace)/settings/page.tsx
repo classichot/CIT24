@@ -15,7 +15,7 @@ export default function SettingsPage() {
   return (
     <div className="grid-2">
       <div className="panel">
-        <div className="panel-head"><h4><T en="Operating mode" th="โหมดการทำงาน" /></h4></div>
+        <div className="panel-head"><h4><T en="Role (Corporate / Advisory / Defence)" th="บทบาท (องค์กร / ที่ปรึกษา / ต่อสู้คดี)" /></h4></div>
         <div className="panel-body">
           <div className="seg" style={{ width: "100%", marginBottom: 14, flexWrap: "wrap" }}>
             <label className="seg-opt" style={{ flex: 1 }}>
@@ -37,7 +37,7 @@ export default function SettingsPage() {
         </div>
       </div>
       <div className="panel">
-        <div className="panel-head"><h4><T en="Law depth" th="ความลึกของกฎหมาย" zh="法规深度" ja="法令の深さ" /></h4></div>
+        <div className="panel-head"><h4><T en="Law depth — Compliance or Complex" th="ความลึกกฎหมาย — เกณฑ์ขั้นต่ำหรือครบทุกกฎหมาย" zh="法规深度 — 合规或完整" ja="法令の深さ — コンプライアンス / コンプレックス" /></h4></div>
         <div className="panel-body">
           <LawToggle />
           <p className="text-muted" style={{ fontSize: 13, marginTop: 12 }}>

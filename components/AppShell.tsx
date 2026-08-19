@@ -142,6 +142,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 13 }}>{lang === "th" ? client.nameTh : client.name}</div>
           <div style={{ fontSize: 11, color: "var(--color-neutral-600)", marginTop: 2 }}>TIN {client.tin} · {client.period}</div>
         </Link>
+        <div className="sidebar-law">
+          <LawToggle variant="block" />
+        </div>
         <nav style={{ flex: 1, overflow: "auto", padding: "10px 8px" }}>
           {NAV.map((g) => {
             const items = g.items.filter((i) => !("advisor" in i && i.advisor) || mode === "advisor");
@@ -206,8 +209,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <AlertTriangle size={13} />
             {lang === "th" ? "ภ.ง.ด.51" : "PND51"} · {loc(lang, "due 31 Aug 2026 · 13 days", "ครบ 31 ส.ค. 2569 · 13 วัน", "截止 2026年8月31日 · 13天", "期限 2026年8月31日 · 13日")}
           </div>
+          <LawToggle />
           <LangToggle />
-          <div className="header-hide-sm"><LawToggle /></div>
           <ModeToggle compact />
           <button className="btn btn-secondary header-hide-sm" onClick={() => setCopilotOpen(!copilotOpen)}><MessageSquare size={16} /><T en="Ask CIT24" th="ถาม CIT24" zh="询问 CIT24" ja="CIT24に質問" /></button>
           <Link href="/pnd50" className="btn btn-primary header-hide-sm"><FileText size={16} /><T en="Filing pack" th="ชุดยื่นแบบ" zh="申报包" ja="申告パック" /></Link>
