@@ -13,6 +13,7 @@ import {
   GitBranch,
   History,
   LayoutGrid,
+  Library,
   LogOut,
   Menu,
   MessageSquare,
@@ -28,6 +29,7 @@ import { ADVISOR_USER, CLIENTS, CORPORATE_USER, DEFENCE_USER, type Lang } from "
 import { useStore } from "@/lib/store";
 import { ModeToggle } from "@/components/ModeToggle";
 import { LangToggle } from "@/components/LangToggle";
+import { LawToggle } from "@/components/LawToggle";
 import { Copilot } from "@/components/Copilot";
 import { AuditTrail } from "@/components/AuditTrail";
 import { pick, T } from "@/lib/i18n";
@@ -45,12 +47,14 @@ const NAV = [
     { href: "/ledger", en: "Tax Adjustment Ledger", th: "ทะเบียนรายการปรับปรุง", zh: "纳税调整台账", ja: "税務調整台帳", icon: GitBranch },
     { href: "/far", en: "Tax depreciation", th: "ค่าเสื่อมราคาทางภาษี", zh: "税务折旧", ja: "税務減価償却", icon: Cog },
     { href: "/rules", en: "Rule library", th: "คลังกฎภาษี", zh: "税法规则库", ja: "税法ルール庫", icon: BookOpen },
+    { href: "/corpus", en: "Regulation corpus", th: "คลังกฎหมาย", zh: "法规库", ja: "法令コーパス", icon: Library },
     { href: "/memory", en: "Tax Memory", th: "ความจำภาษี", zh: "税务记忆", ja: "税務メモリ", icon: Sparkles },
   ]},
   { group: "Provision", groupTh: "ประมาณการ", groupZh: "准备", groupJa: "引当", items: [
     { href: "/provision", en: "Current tax", th: "ภาษีงวดปัจจุบัน", zh: "当期所得税", ja: "当期税", icon: FileText },
     { href: "/losses", en: "Tax-loss schedule", th: "ตารางผลขาดทุน", zh: "税务亏损表", ja: "欠損金表", icon: History },
     { href: "/deferred", en: "Deferred tax", th: "ภาษีรอตัดบัญชี", zh: "递延所得税", ja: "繰延税金", icon: Timer },
+    { href: "/disclosure", en: "TAS 12 disclosure", th: "หมายเหตุ ต.บ. 12", zh: "TAS 12 附注", ja: "TAS 12注記", icon: FileText },
   ]},
   { group: "Filings", groupTh: "การยื่นแบบ", groupZh: "申报", groupJa: "申告", items: [
     { href: "/pnd51", en: "PND51 simulator", th: "ภ.ง.ด.51 แบบจำลอง", zh: "PND51 模拟", ja: "PND51シミュレーター", icon: AlertTriangle, hot: true },
@@ -87,11 +91,14 @@ const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja
   "/ledger": { kicker: { en: "Control centre", th: "ศูนย์ควบคุม", zh: "控制中心", ja: "コントロールセンター" }, title: { en: "Tax Adjustment Ledger", th: "ทะเบียนรายการปรับปรุงภาษี", zh: "纳税调整台账", ja: "税務調整台帳" } },
   "/far": { kicker: { en: "Royal Decree 145", th: "พระราชกฤษฎีกา 145", zh: "第145号王室法令", ja: "勅令145号" }, title: { en: "Tax depreciation", th: "ค่าเสื่อมราคาทางภาษี", zh: "税务折旧", ja: "税務減価償却" } },
   "/rules": { kicker: { en: "Killer feature", th: "จุดเด่น", zh: "核心能力", ja: "中核機能" }, title: { en: "Tax Law Impact Engine", th: "เครื่องมือผลกระทบกฎหมายภาษี", zh: "税法影响引擎", ja: "税法インパクトエンジン" } },
+  "/corpus": { kicker: { en: "Legal source of truth", th: "แหล่งกฎหมายที่เป็นจริง", zh: "法律事实来源", ja: "法令の根拠" }, title: { en: "Regulation corpus", th: "คลังกฎหมายภาษี", zh: "税法法规库", ja: "税法コーパス" } },
   "/memory": { kicker: { en: "Killer feature", th: "จุดเด่น", zh: "核心能力", ja: "中核機能" }, title: { en: "Corporate Tax Memory", th: "ความจำภาษีนิติบุคคล", zh: "企业税务记忆", ja: "法人税メモリ" } },
   "/provision": { kicker: { en: "Continuous close", th: "ปิดภาษีต่อเนื่อง", zh: "持续关账", ja: "継続クローズ" }, title: { en: "Current tax provision", th: "ภาษีเงินได้งวดปัจจุบัน", zh: "当期所得税准备", ja: "当期税金引当" } },
   "/losses": { kicker: { en: "Section 65", th: "มาตรา 65", zh: "第65条", ja: "65条" }, title: { en: "Tax-loss schedule", th: "ตารางผลขาดทุนทางภาษี", zh: "税务亏损表", ja: "欠損金スケジュール" } },
   "/pnd51": { kicker: { en: "Section 67 bis (1)", th: "มาตรา 67 ทวิ (1)", zh: "第67条之二(1)", ja: "67条の2(1)" }, title: { en: "PND51 penalty-risk simulator", th: "ภ.ง.ด.51 แบบจำลองความเสี่ยงเงินเพิ่ม", zh: "PND51 滞纳金风险模拟", ja: "PND51加算税シミュレーター" } },
   "/pnd50": { kicker: { en: "Annual return", th: "แบบประจำปี", zh: "年度申报", ja: "確定申告" }, title: { en: "PND50 computation & filing", th: "ภ.ง.ด.50 การคำนวณและชุดยื่น", zh: "PND50 计算与申报包", ja: "PND50計算と申告パック" } },
+  "/deferred": { kicker: { en: "TAS 12", th: "ต.บ. 12", zh: "TAS 12", ja: "TAS 12" }, title: { en: "Deferred tax", th: "ภาษีรอตัดบัญชี", zh: "递延所得税", ja: "繰延税金" } },
+  "/disclosure": { kicker: { en: "TAS 12 note", th: "หมายเหตุ ต.บ. 12", zh: "TAS 12 附注", ja: "TAS 12注記" }, title: { en: "Income-tax disclosure", th: "การเปิดเผยภาษีเงินได้", zh: "所得税披露", ja: "法人税の注記" } },
   "/reports": { kicker: { en: "EN · TH · ZH · JA", th: "EN · TH · ZH · JA", zh: "英 · 泰 · 中 · 日", ja: "英 · 泰 · 中 · 日" }, title: { en: "Workpapers & packages", th: "กระดาษทำการและชุดเอกสาร", zh: "工作底稿与资料包", ja: "ワークペーパーとパッケージ" } },
   "/review": { kicker: { en: "Workflow", th: "ขั้นตอนงาน", zh: "工作流", ja: "ワークフロー" }, title: { en: "Review & approval", th: "การสอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認" } },
   "/evidence": { kicker: { en: "Audit defence mode", th: "โหมดต่อสู้คดี", zh: "稽查应对模式", ja: "調査対応モード" }, title: { en: "Evidence room", th: "ห้องหลักฐาน", zh: "证据室", ja: "証憑ルーム" } },
@@ -107,7 +114,7 @@ function isActive(path: string, href: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const router = useRouter();
-  const { logout, toast, navOpen, setNavOpen, mode, clientId, setCopilotOpen, copilotOpen, lang, adjustments } = useStore();
+  const { logout, toast, navOpen, setNavOpen, mode, clientId, setCopilotOpen, copilotOpen, lang, adjustments, lawMode } = useStore();
   const user = mode === "advisor" ? ADVISOR_USER : mode === "defence" ? DEFENCE_USER : CORPORATE_USER;
   const client = CLIENTS.find((c) => c.id === clientId) ?? CLIENTS[0];
   const title = TITLES[path] || { kicker: { en: "CIT24", th: "CIT24" }, title: { en: "Thai CIT OS", th: "ระบบภาษีนิติบุคคล", zh: "泰国企业所得税系统", ja: "タイ法人税OS" } };
@@ -173,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--color-accent-700)" }}>
             {mode === "advisor" ? "Advisor firm" : mode === "defence" ? "Audit defence" : "Corporate"}
           </span>
-          <span>Rule pack 2026.2</span>
+          <span>Rule pack 2026.2 · {lawMode === "compliance" ? loc(lang, "Compliance", "เกณฑ์ขั้นต่ำ", "合规", "コンプライアンス") : loc(lang, "Complex", "ครบทุกกฎหมาย", "完整", "コンプレックス")}</span>
           <span>Engine CIT24-CALC · deterministic</span>
           <div className="user-frame">
             <span style={{ width: 30, height: 30, flex: "none", background: "var(--color-neutral-900)", color: "var(--color-bg)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontFamily: "var(--font-heading)", fontSize: 12 }}>{user.initials}</span>
@@ -200,6 +207,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {lang === "th" ? "ภ.ง.ด.51" : "PND51"} · {loc(lang, "due 31 Aug 2026 · 13 days", "ครบ 31 ส.ค. 2569 · 13 วัน", "截止 2026年8月31日 · 13天", "期限 2026年8月31日 · 13日")}
           </div>
           <LangToggle />
+          <div className="header-hide-sm"><LawToggle /></div>
           <ModeToggle compact />
           <button className="btn btn-secondary header-hide-sm" onClick={() => setCopilotOpen(!copilotOpen)}><MessageSquare size={16} /><T en="Ask CIT24" th="ถาม CIT24" zh="询问 CIT24" ja="CIT24に質問" /></button>
           <Link href="/pnd50" className="btn btn-primary header-hide-sm"><FileText size={16} /><T en="Filing pack" th="ชุดยื่นแบบ" zh="申报包" ja="申告パック" /></Link>

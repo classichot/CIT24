@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { PageHead } from "@/components/PageHead";
+import { ResizableTable } from "@/components/ResizableTable";
 import { T, pick } from "@/lib/i18n";
 import { buildWorkpaper, catalog, downloadCsv, type WorkpaperId } from "@/lib/reports";
 import { farRegister } from "@/lib/far";
@@ -21,7 +22,7 @@ export default function ReportsPage() {
   const title = pick(lang, wp.title);
 
   return (
-    <div>
+    <div className="reports-page">
       <PageHead
         kickerEn="English · Thai · Chinese · Japanese · CSV and print"
         kickerTh="อังกฤษ · ไทย · จีน · ญี่ปุ่น · CSV และพิมพ์"
@@ -50,8 +51,8 @@ export default function ReportsPage() {
         }
       />
 
-      <div className="split-wide" style={{ marginTop: 8 }}>
-        <aside className="col-aside no-print" style={{ borderRight: "1px solid var(--color-divider)" }}>
+      <div className="reports-split" style={{ marginTop: 8 }}>
+        <aside className="col-aside no-print reports-catalog" style={{ borderRight: "1px solid var(--color-divider)" }}>
           <div className="card-kicker" style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-accent)", marginBottom: 8 }}>CIT24</div>
           {items.map((r) => (
             <button
@@ -69,32 +70,27 @@ export default function ReportsPage() {
             </button>
           ))}
         </aside>
-        <section className="col-pad" id="workpaper">
-          <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
+        <section className="col-pad reports-detail" id="workpaper">
+          <div className="reports-wp-head">
             <h5 className="sec-h" style={{ margin: 0 }}>{title}</h5>
             <Link href={wp.href} className="text-muted" style={{ fontSize: 12 }}><T en="Open source screen" th="เปิดหน้าต้นทาง" zh="打开源页面" ja="元画面を開く" /></Link>
             <span className="text-muted" style={{ fontSize: 11, marginLeft: "auto" }}>Siam Precision Parts · FY2026 · {lang.toUpperCase()}</span>
           </div>
-          <table className="table">
-            <thead>
-              <tr>
-                {cols.map((c) => (
-                  <th key={c} className={c === "THB" || /amount|dep|cost|origin|THB|บาท|金额|金額/i.test(c) ? "num" : undefined}>{c}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {wp.rows.map((row, i) => (
-                <tr key={i}>
-                  {row.map((cell, j) => (
-                    <td key={j} className={j === row.length - 1 || j >= 2 ? "num" : undefined} style={{ fontWeight: i === wp.rows.length - 1 && sel !== "ledger" ? 700 : 500, fontSize: 13 }}>
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResizableTable
+            storageKey={`reports:${sel}`}
+            columns={cols}
+            rows={wp.rows}
+            thClassName={(c) => (c === "THB" || /amount|dep|cost|origin|THB|บาท|金额|金額/i.test(c) ? "num" : undefined)}
+            tdClassName={(_cell, _i, j) => (j === cols.length - 1 || j >= 2 ? "num" : undefined)}
+            tdStyle={(_cell, i) => {
+              const line = wp.rows[i]?.[0] ?? "";
+              const heavy =
+                sel !== "ledger" &&
+                (i === wp.rows.length - 1 ||
+                  /^(Total |Adjusted profit|Taxable profit|Corporate income tax|Tax payable|Current tax)/i.test(line));
+              return { fontWeight: heavy ? 700 : 500, fontSize: 13 };
+            }}
+          />
           {wp.note && <div className="callout" style={{ marginTop: 14, fontSize: 13 }}>{pick(lang, wp.note)}</div>}
         </section>
       </div>

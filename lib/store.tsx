@@ -19,6 +19,7 @@ import {
   type Adjustment,
   type Lang,
   type ProductMode,
+  type LawMode,
 } from "./model";
 import { computeProvision, liveAdjustments, type AuditNode, type Provision } from "./engine";
 import { hydrateSeedFile, ingestBrowserFiles, type IngestedFile } from "./ingest";
@@ -47,6 +48,20 @@ import {
   type WhtCert,
 } from "./close";
 import { PRIOR_FY2025 } from "./prior";
+import {
+  mintCorpusId,
+  resolveCorpus,
+  todayIso,
+  type CorpusDraft,
+  type CorpusInstrument,
+  type CorpusPatch,
+} from "./corpus";
+import {
+  mergeLawAlerts,
+  reviewRelatedLaws,
+  unreadLawAlertCount as countUnreadLawAlerts,
+  type LawAlert,
+} from "./lawReview";
 
 function actorOf(mode: ProductMode) {
   if (mode === "corporate") return CORPORATE_USER;
@@ -140,7 +155,28 @@ type Store = {
   priorImported: boolean;
   priorRows: Adjustment[];
   importPriorYear: () => void;
+  dtRate: number;
+  setDtRate: (n: number) => void;
+  recoverabilityConfirmed: boolean;
+  confirmRecoverability: () => void;
+  tas12Enabled: boolean;
+  setTas12Enabled: (on: boolean) => void;
   readOnly: boolean;
+  lawMode: LawMode;
+  setLawMode: (m: LawMode) => void;
+  corpus: CorpusInstrument[];
+  markCorpusObsolete: (id: string, opts?: { supersededBy?: string; note?: string }) => boolean;
+  reinstateCorpus: (id: string) => boolean;
+  linkCorpusSuccessor: (id: string, successorId: string) => boolean;
+  addCorpusInstrument: (draft: CorpusDraft) => string | null;
+  lawAlerts: LawAlert[];
+  lawReviewOpen: boolean;
+  setLawReviewOpen: (v: boolean) => void;
+  runLawReview: () => LawAlert[];
+  markLawAlertRead: (id: string) => void;
+  markLawAlertsRead: () => void;
+  dismissLawAlert: (id: string) => void;
+  unreadLawAlertCount: number;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -183,11 +219,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [pnd50Snaps, setPnd50Snaps] = useState<Pnd50Snap[]>([]);
   const [priorImported, setPriorImported] = useState(false);
   const [priorRows, setPriorRows] = useState<Adjustment[]>([]);
+  const [dtRate, setDtRateState] = useState(0.2);
+  const [recoverabilityConfirmed, setRecoverabilityConfirmed] = useState(true);
+  const [tas12Enabled, setTas12EnabledState] = useState(false);
+  const [lawMode, setLawModeState] = useState<LawMode>("compliance");
+  const [corpusExtra, setCorpusExtra] = useState<CorpusInstrument[]>([]);
+  const [corpusPatches, setCorpusPatches] = useState<Record<string, CorpusPatch>>({});
+  const [lawAlerts, setLawAlerts] = useState<LawAlert[]>([]);
+  const [lawReviewOpen, setLawReviewOpen] = useState(false);
 
   const actor = actorOf(mode);
   const readOnly = mode === "defence";
   const canMutate = !readOnly && !locked;
   const isCfo = mode === "corporate";
+  const corpus = useMemo(() => resolveCorpus(corpusExtra, corpusPatches), [corpusExtra, corpusPatches]);
+
+  useEffect(() => {
+    setLawAlerts((prev) => {
+      if (prev.length === 0) return prev;
+      return mergeLawAlerts(prev, reviewRelatedLaws(corpus, lawMode));
+    });
+  }, [corpus, lawMode]);
 
   const adjustments = useMemo(
     () => liveAdjustments(statusOverride, extraAdjs),
@@ -202,8 +254,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [certs],
   );
   const provision = useMemo(
-    () => computeProvision(adjustments, { whtCredit }),
-    [adjustments, whtCredit],
+    () => computeProvision(adjustments, { whtCredit, dtRate, recoverabilityConfirmed, tas12Enabled }),
+    [adjustments, whtCredit, dtRate, recoverabilityConfirmed, tas12Enabled],
   );
   const losses = useMemo(
     () => utiliseLosses(lossYears, provision.adjustedProfit),
@@ -230,6 +282,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (l === "th" || l === "en" || l === "zh" || l === "ja") setLangState(l);
     const c = localStorage.getItem("cit24_client");
     if (c) setClientIdState(c);
+    const law = localStorage.getItem("cit24_law");
+    const nextLaw: LawMode = law === "complex" ? "complex" : "compliance";
+    setLawModeState(nextLaw);
+    const t12 = localStorage.getItem("cit24_tas12");
+    if (t12 === "1" || t12 === "0") setTas12EnabledState(t12 === "1");
+    else setTas12EnabledState(nextLaw === "complex");
     setReady(true);
   }, []);
 
@@ -583,6 +641,219 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     flash("FY2025 ledger imported — 12 positions written to Corporate Tax Memory, not overwritten");
   }, [readOnly, priorImported, flash, logEvent]);
 
+  const setDtRate = useCallback((n: number) => {
+    setDtRateState(n);
+    logEvent(`Deferred-tax enacted rate restated to ${(n * 100).toFixed(0)}% — current tax remains 20%`);
+    flash(`DTA/DTL restated at ${(n * 100).toFixed(0)}%. Current tax (PND50) stays at 20%.`);
+  }, [flash, logEvent]);
+
+  const confirmRecoverability = useCallback(() => {
+    if (readOnly) {
+      flash("Audit-defence mode is read-only");
+      return;
+    }
+    if (!isCfo) {
+      flash("DTA recoverability is a CFO conclusion — switch to Corporate mode");
+      return;
+    }
+    if (!tas12Enabled) {
+      flash("Turn on TAS 12 deferred tax before signing recoverability");
+      return;
+    }
+    setRecoverabilityConfirmed(true);
+    logEvent("CFO signed TAS 12 recoverability memo — DTA recognition criteria met");
+    flash("Recoverability memo signed — DTA recognised against five-year forecast taxable profit");
+  }, [readOnly, isCfo, tas12Enabled, flash, logEvent]);
+
+  const corpusBlocked = useCallback(() => {
+    if (readOnly) {
+      flash("Audit-defence mode is read-only — the regulation corpus cannot be changed");
+      return true;
+    }
+    if (!canMutate) {
+      flash("Period is locked — reopen with CFO authorisation before updating the corpus");
+      return true;
+    }
+    return false;
+  }, [readOnly, canMutate, flash]);
+
+  const markCorpusObsolete = useCallback((id: string, opts?: { supersededBy?: string; note?: string }) => {
+    if (corpusBlocked()) return false;
+    const row = corpus.find((c) => c.id === id);
+    if (!row) {
+      flash("Instrument not in the corpus");
+      return false;
+    }
+    if (opts?.supersededBy) {
+      const suc = corpus.find((c) => c.id === opts.supersededBy);
+      if (!suc) {
+        flash("Successor instrument is not in the corpus");
+        return false;
+      }
+      if (suc.id === id) {
+        flash("An instrument cannot supersede itself");
+        return false;
+      }
+    }
+    const status = opts?.supersededBy ? "superseded" as const : "obsolete" as const;
+    setCorpusPatches((p) => ({
+      ...p,
+      [id]: {
+        ...p[id],
+        status,
+        supersededBy: opts?.supersededBy,
+        obsoleteNote: opts?.note,
+        lastReviewed: todayIso(),
+      },
+    }));
+    const suc = opts?.supersededBy ? ` — superseded by ${opts.supersededBy}` : "";
+    const note = opts?.note ? ` · ${opts.note}` : "";
+    logEvent(`${id} marked ${status}${suc}${note}`);
+    flash(`${id} marked ${status}${suc}. Rule pack still coded; Copilot must warn if a rule cites this instrument.`);
+    return true;
+  }, [corpusBlocked, corpus, flash, logEvent]);
+
+  const reinstateCorpus = useCallback((id: string) => {
+    if (corpusBlocked()) return false;
+    const row = corpus.find((c) => c.id === id);
+    if (!row) {
+      flash("Instrument not in the corpus");
+      return false;
+    }
+    setCorpusPatches((p) => ({
+      ...p,
+      [id]: {
+        ...p[id],
+        status: "in-force",
+        supersededBy: null,
+        obsoleteNote: null,
+        lastReviewed: todayIso(),
+      },
+    }));
+    logEvent(`${id} reinstated to in-force`);
+    flash(`${id} reinstated — in force. Prior obsolete mark remains in the activity log.`);
+    return true;
+  }, [corpusBlocked, corpus, flash, logEvent]);
+
+  const linkCorpusSuccessor = useCallback((id: string, successorId: string) => {
+    if (corpusBlocked()) return false;
+    const row = corpus.find((c) => c.id === id);
+    const suc = corpus.find((c) => c.id === successorId);
+    if (!row || !suc) {
+      flash("Instrument or successor not in the corpus");
+      return false;
+    }
+    if (id === successorId) {
+      flash("An instrument cannot succeed itself");
+      return false;
+    }
+    const nextStatus = row.status === "obsolete" ? "superseded" : row.status;
+    setCorpusPatches((p) => ({
+      ...p,
+      [id]: {
+        ...p[id],
+        status: nextStatus,
+        supersededBy: successorId,
+        lastReviewed: todayIso(),
+      },
+    }));
+    logEvent(`${id} linked successor ${successorId}${row.status === "obsolete" ? " — status superseded" : ""}`);
+    flash(`${id} successor set to ${successorId}`);
+    return true;
+  }, [corpusBlocked, corpus, flash, logEvent]);
+
+  const addCorpusInstrument = useCallback((draft: CorpusDraft) => {
+    if (corpusBlocked()) return null;
+    const cite = draft.cite.trim();
+    const title = draft.title.trim();
+    if (!cite || !title) {
+      flash("Cite and title are required");
+      return null;
+    }
+    const used = new Set(corpus.map((c) => c.id));
+    const id = mintCorpusId(draft.kind, cite, used);
+    const row: CorpusInstrument = {
+      id,
+      cite,
+      title,
+      titleTh: (draft.titleTh ?? "").trim() || title,
+      kind: draft.kind,
+      jurisdiction: "TH",
+      effectiveFrom: draft.effectiveFrom.trim() || todayIso(),
+      status: "in-force",
+      summary: draft.summary.trim() || "Added by tax team — summary pending.",
+      summaryTh: (draft.summaryTh ?? "").trim() || draft.summary.trim() || "เพิ่มโดยทีมภาษี — สรุปยังไม่ระบุ",
+      cit24Use: { ruleIds: [], pages: ["/corpus"], engineHooks: [], note: "Human-added instrument. Not yet wired to the engine." },
+      lastReviewed: todayIso(),
+      bar: lawMode === "complex" ? "complex" : "compliance",
+    };
+    setCorpusExtra((e) => [row, ...e]);
+    logEvent(`${id} added to regulation corpus · ${cite}`);
+    flash(`${id} added — in force. Link rules from the rule library when the pack is updated.`);
+    return id;
+  }, [corpusBlocked, corpus, flash, logEvent, lawMode]);
+
+  const setLawMode = useCallback((next: LawMode) => {
+    setLawModeState(next);
+    localStorage.setItem("cit24_law", next);
+    logEvent(`Law depth switched to ${next === "compliance" ? "Compliance (acceptable bar)" : "Complex (full related law)"}`);
+    flash(next === "compliance"
+      ? "Compliance mode — filing bar. TAS 12 deferred defaults off. ETR stays current tax ÷ PBT."
+      : "Complex mode — full rule pack, TAS 12 engine, corpus history and Pillar Two exception.");
+    if (readOnly || !canMutate) return;
+    const on = next === "complex";
+    setTas12EnabledState(on);
+    localStorage.setItem("cit24_tas12", on ? "1" : "0");
+    logEvent(on
+      ? "TAS 12 deferred tax turned on — Complex mode default"
+      : "TAS 12 deferred tax turned off — Compliance mode default");
+  }, [readOnly, canMutate, flash, logEvent]);
+
+  const runLawReview = useCallback(() => {
+    const fresh = reviewRelatedLaws(corpus, lawMode);
+    setLawAlerts((prev) => mergeLawAlerts(prev, fresh));
+    logEvent(`AI law review ran — ${fresh.length} alert${fresh.length === 1 ? "" : "s"} (propose only)`);
+    flash(`${fresh.length} law alert${fresh.length === 1 ? "" : "s"}`);
+    return fresh;
+  }, [corpus, lawMode, flash, logEvent]);
+
+  const markLawAlertRead = useCallback((id: string) => {
+    setLawAlerts((rows) => rows.map((a) => a.id === id ? { ...a, read: true } : a));
+  }, []);
+
+  const markLawAlertsRead = useCallback(() => {
+    setLawAlerts((rows) => {
+      if (rows.every((a) => a.dismissed || a.read)) return rows;
+      return rows.map((a) => a.dismissed || a.read ? a : { ...a, read: true });
+    });
+  }, []);
+
+  const dismissLawAlert = useCallback((id: string) => {
+    setLawAlerts((rows) => rows.map((a) => a.id === id ? { ...a, dismissed: true, read: true } : a));
+    logEvent(`Dismissed law alert ${id} (propose only — corpus unchanged)`);
+  }, [logEvent]);
+
+  const unreadLawAlertCount = useMemo(() => countUnreadLawAlerts(lawAlerts), [lawAlerts]);
+
+  const setTas12Enabled = useCallback((on: boolean) => {
+    if (readOnly) {
+      flash("Audit-defence mode is read-only");
+      return;
+    }
+    if (!canMutate) {
+      flash("Period is locked — TAS 12 deferred tax cannot be switched");
+      return;
+    }
+    setTas12EnabledState(on);
+    localStorage.setItem("cit24_tas12", on ? "1" : "0");
+    logEvent(on
+      ? "TAS 12 deferred tax turned on — live DTA/DTL, recoverability and tax-expense journal"
+      : "TAS 12 deferred tax turned off — current tax, PND50 and ETR unchanged; no DTA/DTL booked");
+    flash(on
+      ? "TAS 12 deferred tax on. ETR remains current tax ÷ PBT."
+      : "TAS 12 deferred tax off. Current tax, PND50 and ETR are unchanged.");
+  }, [readOnly, canMutate, flash, logEvent]);
+
   const approvedMaps = useMemo(
     () => Object.fromEntries(accounts.filter((a) => a.mapped).map((a) => [a.code, true])),
     [accounts],
@@ -602,9 +873,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence,
       certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal,
       runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50,
-      priorImported, priorRows, importPriorYear, readOnly,
+      priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly,
+      lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument,
+      lawAlerts, lawReviewOpen, setLawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount,
     }),
-    [ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang, clientId, setClientId, toast, flash, navOpen, copilotOpen, pendingAsk, ask, consumeAsk, audit, statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount, mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl, locked, toggleLock, materiality, pnd51, setPnd51, evid, toggleEv, fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal, runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50, priorImported, priorRows, importPriorYear, readOnly],
+    [ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang, clientId, setClientId, toast, flash, navOpen, copilotOpen, pendingAsk, ask, consumeAsk, audit, statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount, mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl, locked, toggleLock, materiality, pnd51, setPnd51, evid, toggleEv, fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal, runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50, priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly, lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument, lawAlerts, lawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

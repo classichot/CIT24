@@ -7,7 +7,6 @@ import {
   H1_PROFIT,
   H1_REVENUE,
   PND51_CREDIT,
-  ROLLFORWARD,
   TAX_LOSSES_AVAILABLE,
   TAX_RATE,
   WHT_CREDIT,
@@ -17,6 +16,8 @@ import {
 import { money } from "./format";
 import { RULES } from "./rules";
 import { farTotals } from "./far";
+import { LOSS_SEED, utiliseLosses } from "./close";
+import { computeTas12, type Tas12Result } from "./tas12";
 
 export type AuditNode = {
   id: string;
@@ -45,6 +46,10 @@ export type Provision = {
   permanent: number;
   temporary: number;
   dta: number;
+  dtl: number;
+  dtExpense: number;
+  taxExpense: number;
+  tas12: Tas12Result;
   audit: AuditNode;
 };
 
@@ -63,18 +68,35 @@ export function liveAdjustments(statusOverride: Record<string, AdjStatus>, extra
   return base.concat(extra);
 }
 
-export function computeProvision(adjs: Adjustment[] = ADJUSTMENTS, opts?: { whtCredit?: number }): Provision {
+export function computeProvision(adjs: Adjustment[] = ADJUSTMENTS, opts?: {
+  whtCredit?: number;
+  dtRate?: number;
+  recoverabilityConfirmed?: boolean;
+  tas12Enabled?: boolean;
+}): Provision {
   const addBacks = money(adjs.filter((a) => a.adjAmt > 0).reduce((s, a) => s + a.adjAmt, 0));
   const deductions = money(adjs.filter((a) => a.adjAmt < 0).reduce((s, a) => s + a.adjAmt, 0));
   const adjustedProfit = money(ACCOUNTING_PROFIT + addBacks + deductions);
-  const losses = money(Math.min(TAX_LOSSES_AVAILABLE, Math.max(0, adjustedProfit)));
+  const lossRows = utiliseLosses(LOSS_SEED, adjustedProfit);
+  const losses = money(lossRows.reduce((s, y) => s + y.utilised, 0));
   const taxableProfit = money(adjustedProfit - losses);
   const currentTax = money(taxableProfit * TAX_RATE);
   const whtCredit = opts?.whtCredit ?? WHT_CREDIT;
   const payable = money(currentTax - PND51_CREDIT - whtCredit);
   const permanent = money(adjs.filter((a) => a.pt === "P").reduce((s, a) => s + a.adjAmt, 0));
   const temporary = money(adjs.filter((a) => a.pt === "T").reduce((s, a) => s + a.adjAmt, 0));
-  const dta = money(ROLLFORWARD.reduce((s, r) => s + (r.open + r.add + r.rev) * TAX_RATE, 0));
+  const tas12 = computeTas12({
+    adjs,
+    taxableProfit,
+    currentTax,
+    pnd51Credit: PND51_CREDIT,
+    whtCredit,
+    payable,
+    losses: lossRows,
+    rate: opts?.dtRate ?? TAX_RATE,
+    recoverabilityConfirmed: opts?.recoverabilityConfirmed ?? true,
+    enabled: opts?.tas12Enabled ?? true,
+  });
   const etr = currentTax / ACCOUNTING_PROFIT;
 
   const audit: AuditNode = {
@@ -121,7 +143,11 @@ export function computeProvision(adjs: Adjustment[] = ADJUSTMENTS, opts?: { whtC
     etr,
     permanent,
     temporary,
-    dta,
+    dta: tas12.dtaRecognised,
+    dtl: tas12.dtlRecognised,
+    dtExpense: tas12.dtExpense,
+    taxExpense: tas12.taxExpense,
+    tas12,
     audit,
   };
 }
@@ -251,17 +277,6 @@ export function simulatePnd51(g: number, m: number, declared: number, method: Pn
     recommended: Math.round((S.taxable * 0.85) / 100000) * 100000,
     grid,
   };
-}
-
-export function dtaRegister() {
-  return [
-    { name: "2340-00 Warranty provision", diff: 4_600_000 },
-    { name: "2310-00 Accrued bonus", diff: 2_500_000 },
-    { name: "1600-00 PPE — tax base lower", diff: 6_400_000 },
-    { name: "1455-00 Inventory provision", diff: 3_250_000 },
-    { name: "2110-00 FX on payables", diff: 1_846_000 },
-    { name: "1210-00 Doubtful-debt allowance", diff: 920_000 },
-  ].map((r) => ({ ...r, dt: money(r.diff * TAX_RATE), kind: "Asset" as const }));
 }
 
 export const ENGINE_ID = "CIT24-CALC";

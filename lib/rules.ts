@@ -2,9 +2,33 @@ import type { Risk, TaxRule } from "./model";
 
 export type RuleFamily = "65ter" | "65bis" | "rate" | "credit" | "filing" | "asset" | "tp" | "boi";
 
+export type LawBar = "compliance" | "complex";
+
 export type CitRule = TaxRule & {
   family: RuleFamily;
   formula?: string;
+  /** Primary regulation-corpus id (see lib/corpus.ts). */
+  corpusId: string;
+  /** Compliance = filing bar; Complex = full related-law pack. */
+  bar: LawBar;
+};
+
+const COMPLEX_RULE_IDS = new Set([
+  "RULE-65T-10", "RULE-65T-11", "RULE-65T-12", "RULE-65T-14",
+  "RULE-65T-16", "RULE-65T-17", "RULE-65T-18", "RULE-65T-19",
+  "RULE-65B-13", "RULE-TP-71B", "RULE-TP-71T", "RULE-RATE-SME",
+  "RULE-FTC", "RULE-BOI-ALLOC", "RULE-BOI-EX", "RULE-LOYAL-13",
+]);
+
+const FAMILY_CORPUS: Record<RuleFamily, string> = {
+  "65ter": "RC-65-TER",
+  "65bis": "RC-65-BIS",
+  asset: "RD-145",
+  rate: "RC-65",
+  credit: "RC-60",
+  filing: "RC-67-BIS",
+  tp: "RC-71-BIS",
+  boi: "BOI-ACT",
 };
 
 function R(
@@ -25,6 +49,8 @@ function R(
     tests: extra?.tests ?? "8 / 8",
     legalUrl: extra?.legalUrl ?? "https://www.rd.go.th/827.html",
     formula: extra?.formula,
+    corpusId: extra?.corpusId ?? FAMILY_CORPUS[family],
+    bar: extra?.bar ?? (COMPLEX_RULE_IDS.has(id) ? "complex" : "compliance"),
   };
 }
 
@@ -63,23 +89,24 @@ export const RULES: CitRule[] = [
   R("RULE-DEP-MCH", "Machinery and equipment — 20% ceiling", "RD 145 s.4", "asset", "Low", "Machinery, equipment and factory tools: tax ceiling 20% per year. Book rates above 20% create a temporary add-back.", "FAR class, commissioning date", { legalUrl: RC, formula: "tax_dep = min(book_dep, 0.20 * cost)", version: "v4", effective: "01 Jan 2025" }),
   R("RULE-DEP-VEH", "Motor vehicles — 20% and cost cap", "RD 145 s.4", "asset", "Medium", "Vehicles depreciate at a 20% tax ceiling. Passenger cars are often subject to an acquisition-cost cap; excess cost is never depreciated for tax.", "Logbook, invoice, FAR", { legalUrl: RC, version: "v4", effective: "01 Jan 2025", clients: 11 }),
   R("RULE-DEP-IT", "Computer hardware — 20% ceiling", "RD 145 s.4", "asset", "Low", "Computer hardware follows the 20% machinery ceiling unless a specific notification allows a shorter life. Software follows its own rules.", "IT register", { legalUrl: RC, version: "v4", effective: "01 Jan 2025" }),
-  R("RULE-BD-186", "Bad debt write-off conditions", "Min. Reg. 186", "65ter", "High", "A write-off is deductible only where the prescribed collection steps for the debt size have been taken and documented before year-end.", "Demand letters, legal filings, debtor correspondence", { version: "v3", effective: "01 Jan 2024", legalUrl: RC, tests: "11 / 12", clients: 5 }),
+  R("RULE-BD-186", "Bad debt write-off conditions", "Min. Reg. 186", "65ter", "High", "A write-off is deductible only where the prescribed collection steps for the debt size have been taken and documented before year-end.", "Demand letters, legal filings, debtor correspondence", { version: "v3", effective: "01 Jan 2024", legalUrl: RC, tests: "11 / 12", clients: 5, corpusId: "MR-186" }),
   R("RULE-TP-71B", "Related-party pricing adjustment", "s.71 bis", "tp", "High", "Related-party charges must be at arm’s length. Amounts above the benchmarked range are treated as non-deductible, sourced from TP24.", "Benchmark study, intercompany agreement", { legalUrl: RC, tests: "8 / 8", clients: 9 }),
-  R("RULE-TP-71T", "Transfer-pricing disclosure completeness", "s.71 ter", "tp", "High", "Failure to prepare or file the prescribed TP documentation is a compliance event. CIT24 flags missing TP24 packages; it does not calculate the penalty.", "TP24 local file, disclosure form", { legalUrl: RC, clients: 6 }),
+  R("RULE-TP-71T", "Transfer-pricing disclosure completeness", "s.71 ter", "tp", "High", "Failure to prepare or file the prescribed TP documentation is a compliance event. CIT24 flags missing TP24 packages; it does not calculate the penalty.", "TP24 local file, disclosure form", { legalUrl: RC, clients: 6, corpusId: "RC-71-TER" }),
   R("RULE-67B-51", "PND51 estimated annual profit", "s.67 bis (1)", "filing", "High", "Ordinary companies estimate annual profit and pay one half. Understatement of more than 25% without reasonable cause produces a 20% surcharge on the shortfall (Order ป.50/2537).", "Board budget, H1 accounts, assumption file", { version: "v3", effective: "01 Jan 2024", legalUrl: "https://www.rd.go.th/3597.html", formula: "surcharge = 0.20 * max(0, 0.5*tax(proj) - 0.5*tax(declared)) if declared < 0.75 * proj_taxable", tests: "9 / 9", clients: 14 }),
   R("RULE-67B-51B", "PND51 actual six-month method", "s.67 bis (2)", "filing", "High", "Listed companies, banks and specified financial businesses pay tax on actual net profit of the first six months. The 25% estimation test does not apply.", "H1 management accounts", { version: "v3", effective: "01 Jan 2024", legalUrl: RC, clients: 3 }),
-  R("RULE-67-50", "PND50 annual return deadline", "s.68 / s.67", "filing", "Medium", "The annual return is generally due within 150 days after the accounting-period end. CIT24 tracks the deadline; it does not e-file.", "Year-end date, filing calendar", { legalUrl: "https://www.rd.go.th/840.html", clients: 14 }),
+  R("RULE-67-50", "PND50 annual return deadline", "s.68 / s.67", "filing", "Medium", "The annual return is generally due within 150 days after the accounting-period end. CIT24 tracks the deadline; it does not e-file.", "Year-end date, filing calendar", { legalUrl: "https://www.rd.go.th/840.html", clients: 14, corpusId: "RC-68" }),
   R("RULE-RATE-20", "Standard corporate tax rate 20%", "s.65", "rate", "Low", "Ordinary companies are taxed at 20% of taxable profit unless an SME, BOI or other special rate applies.", "Rate-profile election", { legalUrl: RC, formula: "current_tax = 0.20 * taxable_profit", clients: 14 }),
   R("RULE-RATE-SME", "SME progressive rates", "RD / notification", "rate", "Medium", "Qualifying SMEs apply progressive bands on taxable profit. CIT24 uses the entity rate profile; it will not silently switch a normal company to SME.", "Paid-up capital, revenue test", { legalUrl: RC, clients: 5 }),
   R("RULE-WHT-CR", "Withholding-tax credit matching", "s.60 / s.3", "credit", "Medium", "WHT credits are allowed only where the certificate matches a GL receipt and the income was included. Unmatched certificates do not reduce payable.", "Certificates, GL 1150-00", { legalUrl: RC, formula: "wht_credit = sum(matched_certificates)", clients: 14, tests: "10 / 10" }),
   R("RULE-FTC", "Foreign-tax credit limitation", "s.60 / treaties", "credit", "Medium", "Foreign tax credit is limited to Thai tax on the foreign-source income. Excess credit is not refundable in the ordinary case.", "Foreign assessments, treaty article", { legalUrl: RC, clients: 4 }),
-  R("RULE-PND51-CR", "PND51 payment credited on PND50", "s.67 bis", "credit", "Low", "Half-year tax paid with PND51 is credited against PND50 payable. True-up is a payment difference, not a P/T item.", "PND51 receipt", { legalUrl: RC, formula: "payable = current_tax - pnd51_paid - wht_credit", clients: 14 }),
+  R("RULE-PND51-CR", "PND51 payment credited on PND50", "s.67 bis", "credit", "Low", "Half-year tax paid with PND51 is credited against PND50 payable. True-up is a payment difference, not a P/T item.", "PND51 receipt", { legalUrl: RC, formula: "payable = current_tax - pnd51_paid - wht_credit", clients: 14, corpusId: "RC-67-BIS" }),
   R("RULE-BOI-ALLOC", "BOI and non-BOI cost allocation", "BOI Act / RD", "boi", "High", "Shared costs are allocated between promoted and non-promoted activity on an approved, consistently applied basis. Exempt income is removed from taxable profit.", "BOI certificate, allocation memo", { version: "v1", effective: "01 Jan 2026", legalUrl: "https://www.rd.go.th/840.html", tests: "4 / 6", clients: 3 }),
   R("RULE-BOI-EX", "BOI-exempt profit computation", "BOI / s.65", "boi", "High", "Promoted-activity profit is exempt for the holiday period. CIT24 does not mix BOI and non-BOI tax bases in the MVP engine.", "Project P&L, BOI card", { legalUrl: "https://www.rd.go.th/840.html", clients: 3 }),
-  R("RULE-INT-65", "Interest deductibility and thin capitalisation", "s.65 / notifications", "65ter", "Medium", "Commercial interest is deductible when incurred for the business. Related-party interest must also clear the arm’s-length and any thin-cap notification.", "Loan agreements, TP24", { legalUrl: RC, clients: 7 }),
+  R("RULE-INT-65", "Interest deductibility and thin capitalisation", "s.65 / notifications", "65ter", "Medium", "Commercial interest is deductible when incurred for the business. Related-party interest must also clear the arm’s-length and any thin-cap notification.", "Loan agreements, TP24", { legalUrl: RC, clients: 7, corpusId: "RC-65" }),
   R("RULE-DIR-REM", "Directors’ remuneration", "s.65 ter", "65ter", "Medium", "Directors’ fees are deductible when paid or when a fixed obligation exists. PIT24 should confirm withholding on the individual.", "Board minutes, PIT24", { clients: 8 }),
   R("RULE-INV-OBS", "Inventory obsolescence and destruction", "s.65 ter (1)", "65ter", "Medium", "An obsolescence provision is not deductible until the goods are sold, scrapped or destroyed with a report. Reversal Guardian watches the disposal account.", "Ageing, destruction report", { formula: "add_back = inventory_provision; reverse_on = scrap_or_sale" }),
-  R("RULE-AUDIT-ADJ", "Prior-period and audit adjustments", "s.65", "65bis", "Medium", "Audit adjustments after year-end follow their tax character: timing items reverse, permanent items stay. Import of the prior ledger preserves the trail.", "Signed audit entries, prior PND50", { legalUrl: RC, clients: 10 }),
+  R("RULE-LOYAL-13", "Customer loyalty award credits (legacy TFRIC 13)", "TFRIC 13", "65bis", "Medium", "TFRIC 13 used to allocate consideration to award credits. It was withdrawn when TFRS 15 became effective. Any remaining loyalty deferred-revenue difference should follow TFRS 15 timing and TAS 12 — not TFRIC 13. This rule is retained only so the corpus review can flag an obsolete cite.", "Loyalty programme rules, deferred-revenue roll-forward", { corpusId: "TFRIC-13", version: "v1", effective: "01 Jan 2019", tests: "0 / 0", clients: 1 }),
+  R("RULE-AUDIT-ADJ", "Prior-period and audit adjustments", "s.65", "65bis", "Medium", "Audit adjustments after year-end follow their tax character: timing items reverse, permanent items stay. Import of the prior ledger preserves the trail.", "Signed audit entries, prior PND50", { legalUrl: RC, clients: 10, corpusId: "RC-65" }),
 ];
 
 export const RULE_FAMILIES: { id: RuleFamily; en: string; th: string; zh: string; ja: string }[] = [
@@ -92,3 +119,12 @@ export const RULE_FAMILIES: { id: RuleFamily; en: string; th: string; zh: string
   { id: "tp", en: "Transfer pricing", th: "ราคาโอน", zh: "转让定价", ja: "移転価格" },
   { id: "boi", en: "BOI", th: "BOI", zh: "BOI 投资促进", ja: "BOI" },
 ];
+
+export function rulesForLawMode(mode: "compliance" | "complex") {
+  if (mode === "complex") return RULES;
+  return RULES.filter((r) => r.bar === "compliance");
+}
+
+export function complexRuleCount() {
+  return RULES.filter((r) => r.bar === "complex").length;
+}

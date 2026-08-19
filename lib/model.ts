@@ -1,4 +1,6 @@
 export type ProductMode = "corporate" | "advisor" | "defence";
+/** Depth of law — independent of advisor/corporate/defence role modes. */
+export type LawMode = "compliance" | "complex";
 export type Lang = "en" | "th" | "zh" | "ja";
 export type AdjStatus = "Approved" | "In review" | "Query" | "Draft";
 export type DiffKind = "P" | "T";

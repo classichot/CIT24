@@ -4,7 +4,6 @@ import type { LossYear, WhtCert } from "./close";
 import type { FarLine } from "./far";
 import { FAR_CLASS_LABEL, farAssetName, farTotals } from "./far";
 import { F } from "./format";
-import { ROLLFORWARD } from "./model";
 
 type Copy = { en: string; th: string; zh?: string; ja?: string };
 
@@ -15,7 +14,7 @@ function pick(lang: Lang, o: Copy): string {
   return o.en;
 }
 
-export type WorkpaperId = "btt" | "ledger" | "far" | "losses" | "wht" | "pnd50" | "provision" | "etr" | "roll";
+export type WorkpaperId = "btt" | "ledger" | "far" | "losses" | "wht" | "pnd50" | "provision" | "etr" | "roll" | "tas12" | "taxbase" | "gmt24";
 
 export type Workpaper = {
   id: WorkpaperId;
@@ -34,13 +33,16 @@ export function catalog(): { id: WorkpaperId; href: string; title: Copy }[] {
   return [
     { id: "btt", href: "/provision", title: { en: "Book-to-tax reconciliation", th: "กระทบยอดกำไรบัญชีเป็นกำไรภาษี", zh: "账面利润与应税利润调节", ja: "会計利益と課税所得の調整" } },
     { id: "ledger", href: "/ledger", title: { en: "Tax-adjustment register", th: "ทะเบียนรายการปรับปรุงภาษี", zh: "纳税调整登记簿", ja: "税務調整台帳" } },
-    { id: "roll", href: "/deferred", title: { en: "Adjustment rollforward", th: "ตารางเคลื่อนไหวรายการ", zh: "暂时性差异滚动表", ja: "一時差異ロールフォワード" } },
+    { id: "roll", href: "/deferred", title: { en: "Temporary-difference movement", th: "ตารางเคลื่อนไหวผลต่างชั่วคราว", zh: "暂时性差异滚动表", ja: "一時差異ロールフォワード" } },
     { id: "provision", href: "/provision", title: { en: "Current-tax provision", th: "ประมาณการภาษีงวดปัจจุบัน", zh: "当期所得税准备", ja: "当期税金引当" } },
     { id: "etr", href: "/provision", title: { en: "ETR reconciliation", th: "กระทบยอดอัตราภาษีที่แท้จริง", zh: "有效税率调节", ja: "実効税率調整" } },
     { id: "losses", href: "/losses", title: { en: "Tax-loss schedule", th: "ตารางผลขาดทุน", zh: "税务亏损明细", ja: "欠損金スケジュール" } },
     { id: "far", href: "/far", title: { en: "Fixed-asset tax depreciation", th: "ค่าเสื่อมราคาทางภาษี", zh: "固定资产税务折旧", ja: "固定資産税務減価償却" } },
     { id: "wht", href: "/data", title: { en: "Withholding-tax credit reconciliation", th: "กระทบยอดเครดิตภาษีหัก ณ ที่จ่าย", zh: "预提所得税抵免调节", ja: "源泉税額控除の突合" } },
     { id: "pnd50", href: "/pnd50", title: { en: "PND50 tax computation", th: "การคำนวณ ภ.ง.ด.50", zh: "PND50 税额计算", ja: "PND50 税額計算" } },
+    { id: "tas12", href: "/disclosure", title: { en: "TAS 12 disclosure note", th: "หมายเหตุ ต.บ. 12", zh: "TAS 12 附注", ja: "TAS 12注記" } },
+    { id: "taxbase", href: "/deferred", title: { en: "Tax-base register", th: "ทะเบียนฐานภาษี", zh: "计税基础台账", ja: "税務簿価台帳" } },
+    { id: "gmt24", href: "/ecosystem", title: { en: "GMT24 covered-tax feed", th: "ข้อมูลภาษีครอบคลุมสำหรับ GMT24", zh: "GMT24 覆盖税数据", ja: "GMT24対象税フィード" } },
   ];
 }
 
@@ -64,9 +66,11 @@ export function buildWorkpaper(
       ...adjs.filter((a) => a.adjAmt > 0).map((a) => [nameOf(lang, a), `${a.sec} · ${a.id}`, F(a.adjAmt)]),
       [pick(lang, { en: "Total add-backs", th: "รวมบวกกลับ", zh: "调增合计", ja: "加算合計" }), "", F(p.addBacks)],
       ...adjs.filter((a) => a.adjAmt < 0).map((a) => [nameOf(lang, a), `${a.origin} · ${a.id}`, F(a.adjAmt)]),
+      [pick(lang, { en: "Total deductions", th: "รวมรายการหัก", zh: "调减合计", ja: "減算合計" }), "", F(p.deductions)],
       [pick(lang, { en: "Adjusted profit", th: "กำไรหลังปรับปรุง", zh: "调整后利润", ja: "調整後利益" }), "", F(p.adjustedProfit)],
       [pick(lang, { en: "Tax losses utilised", th: "ผลขาดทุนที่ใช้", zh: "已用税务亏损", ja: "欠損金使用" }), "s.65 FIFO", F(-p.losses)],
       [pick(lang, { en: "Taxable profit", th: "กำไรสุทธิทางภาษี", zh: "应税所得", ja: "課税所得" }), "CIT24-CALC 2026.2", F(p.taxableProfit)],
+      [pick(lang, { en: "Corporate income tax at 20%", th: "ภาษีเงินได้นิติบุคคล 20%", zh: "企业所得税 20%", ja: "法人税 20%" }), "s.65", F(p.currentTax)],
     ];
     return { ...meta, columns: cols3(lang), rows };
   }
@@ -185,7 +189,10 @@ export function buildWorkpaper(
         [pick(lang, { en: "Payable", th: "ต้องชำระ", zh: "应付", ja: "納付額" }), "", F(p.payable)],
         [pick(lang, { en: "Permanent differences", th: "ผลต่างถาวร", zh: "永久性差异", ja: "永久差異" }), "", F(p.permanent)],
         [pick(lang, { en: "Temporary differences", th: "ผลต่างชั่วคราว", zh: "暂时性差异", ja: "一時差異" }), "", F(p.temporary)],
-        [pick(lang, { en: "Deferred tax asset (20%)", th: "สินทรัพย์ภาษีรอตัดบัญชี 20%", zh: "递延所得税资产 20%", ja: "繰延税金資産 20%" }), "TAS 12", F(p.dta)],
+        [pick(lang, { en: "Deferred tax asset recognised", th: "DTA ที่รับรู้", zh: "已确认递延所得税资产", ja: "認識済DTA" }), "TAS 12", F(p.dta)],
+        [pick(lang, { en: "Deferred tax liability recognised", th: "DTL ที่รับรู้", zh: "已确认递延所得税负债", ja: "認識済DTL" }), "TAS 12", F(p.dtl)],
+        [pick(lang, { en: "Deferred tax expense", th: "ค่าใช้จ่ายภาษีรอตัดบัญชี", zh: "递延所得税费用", ja: "繰延税金費用" }), "TAS 12", F(p.dtExpense)],
+        [pick(lang, { en: "Income tax expense", th: "ค่าใช้จ่ายภาษีรวม", zh: "所得税费用", ja: "税金費用" }), "Current + deferred", F(p.taxExpense)],
       ],
     };
   }
@@ -204,6 +211,72 @@ export function buildWorkpaper(
     };
   }
 
+  if (id === "tas12") {
+    const t = p.tas12;
+    return {
+      ...meta,
+      columns: cols3(lang),
+      rows: [
+        [pick(lang, { en: "Current tax — Thai CIT", th: "ภาษีงวดปัจจุบัน", zh: "当期税", ja: "当期税" }), "s.65", F(p.currentTax)],
+        [pick(lang, { en: "Current tax — Pillar Two", th: "ภาษีเสาหลักสอง", zh: "第二支柱当期税", ja: "ピラー2当期税" }), "GMT24", F(t.pillarTwo.currentTax, true)],
+        [pick(lang, { en: "Deferred tax expense", th: "ภาษีรอตัดบัญชี", zh: "递延税", ja: "繰延税金" }), `${(t.rate * 100).toFixed(0)}%`, F(t.dtExpense)],
+        [pick(lang, { en: "Income tax expense", th: "ค่าใช้จ่ายภาษี", zh: "所得税费用", ja: "税金費用" }), "", F(t.taxExpense)],
+        [pick(lang, { en: "DTA recognised", th: "DTA ที่รับรู้", zh: "已确认DTA", ja: "認識DTA" }), "", F(t.dtaRecognised)],
+        [pick(lang, { en: "DTL recognised", th: "DTL ที่รับรู้", zh: "已确认DTL", ja: "認識DTL" }), "", F(t.dtlRecognised)],
+        [pick(lang, { en: "Unrecognised DT", th: "ไม่รับรู้", zh: "未确认", ja: "未認識" }), "Exceptions", F(t.unrecognisedDta + t.unrecognisedDtl)],
+        [pick(lang, { en: "Unused tax credit DTA", th: "DTA จากเครดิตที่ยังไม่ใช้", zh: "未用抵免DTA", ja: "未使用税額控除DTA" }), "s.60", F(t.creditDt)],
+      ],
+      note: t.enabled
+        ? undefined
+        : { en: "TAS 12 deferred tax is off — no DTA/DTL booked. Current tax, PND50 and ETR are unchanged.", th: "ภาษีรอตัดบัญชีตาม ต.บ. 12 ปิด — ไม่บันทึก DTA/DTL ภาษีงวดปัจจุบัน ภ.ง.ด.50 และ ETR ไม่เปลี่ยน", zh: "TAS 12递延税已关闭，未入账DTA/DTL。", ja: "TAS 12繰延税金はオフ。DTA/DTLは計上していません。" },
+    };
+  }
+
+  if (id === "gmt24") {
+    const t = p.tas12;
+    return {
+      ...meta,
+      columns: cols3(lang),
+      rows: [
+        ["currentTaxThai", "CIT24-CALC", F(p.currentTax)],
+        ["deferredTaxDomestic", "TAS 12", F(t.dtExpense)],
+        ["deferredIncludesPillarTwo", "", "false"],
+        ["pillarTwoException", "TAS 12", "true"],
+        ["pillarTwoCurrentTax", "GMT24", F(t.pillarTwo.currentTax, true)],
+        ["pillarTwoInScope", "", String(t.pillarTwo.inScope)],
+        ["whtCredit", "Matched certs", F(p.whtCredit)],
+      ],
+      note: { en: t.pillarTwo.exception, th: t.pillarTwo.exception, zh: t.pillarTwo.exception, ja: t.pillarTwo.exception },
+    };
+  }
+
+  if (id === "taxbase") {
+    const t = p.tas12;
+    return {
+      ...meta,
+      columns: [
+        { en: "Item", th: "รายการ", zh: "项目", ja: "項目" },
+        { en: "Carrying amount", th: "มูลค่าตามบัญชี", zh: "账面价值", ja: "帳簿価額" },
+        { en: "Tax base", th: "ฐานภาษี", zh: "计税基础", ja: "税務基準" },
+        { en: "Temporary difference", th: "ผลต่างชั่วคราว", zh: "暂时性差异", ja: "一時差異" },
+        { en: "Kind", th: "ประเภท", zh: "类型", ja: "区分" },
+        { en: "Recognised DT", th: "DT ที่รับรู้", zh: "已确认递延税", ja: "認識済DT" },
+      ],
+      rows: t.lines.map((l) => [
+        lang === "th" ? l.nameTh : l.name,
+        l.id === "TB-PPE" ? "—" : F(l.carrying),
+        F(l.taxBase, l.id !== "TB-PPE"),
+        F(l.close),
+        l.kind,
+        F(l.recognised, true),
+      ]),
+      note: t.enabled
+        ? undefined
+        : { en: "TAS 12 deferred tax is off — carrying vs tax base is not booked as DTA/DTL.", th: "ภาษีรอตัดบัญชีตาม ต.บ. 12 ปิด — ไม่บันทึก DTA/DTL", zh: "TAS 12已关闭，未入账DTA/DTL。", ja: "TAS 12オフのためDTA/DTLは計上していません。" },
+    };
+  }
+
+  const t = p.tas12;
   return {
     ...meta,
     columns: [
@@ -212,14 +285,16 @@ export function buildWorkpaper(
       { en: "Additions", th: "เพิ่มขึ้น", zh: "增加", ja: "増加" },
       { en: "Reversals", th: "กลับรายการ", zh: "转回", ja: "戻入" },
       { en: "Closing", th: "ยกไป", zh: "期末", ja: "期末" },
+      { en: "Kind", th: "ประเภท", zh: "类型", ja: "区分" },
       { en: "Expected", th: "คาดว่าจะกลับ", zh: "预计转回", ja: "戻入見込" },
     ],
-    rows: ROLLFORWARD.map((r) => [
+    rows: t.lines.filter((l) => l.origin === "temporary").map((r) => [
       lang === "th" ? r.nameTh : r.name,
       F(r.open),
       F(r.add),
       F(r.rev),
-      F(r.open + r.add + r.rev),
+      F(r.close),
+      r.kind,
       r.when,
     ]),
   };

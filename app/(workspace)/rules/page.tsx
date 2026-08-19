@@ -1,22 +1,31 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { RULES, RULE_FAMILIES, type RuleFamily } from "@/lib/rules";
+import Link from "next/link";
+import { RULES, RULE_FAMILIES, rulesForLawMode, complexRuleCount, type RuleFamily } from "@/lib/rules";
+import { corpusForLawMode, corpusForRule, corpusStats, corpusStatusCls, isCorpusStale, statusLabel } from "@/lib/corpus";
 import { useStore } from "@/lib/store";
 import { PageHead, riskCls } from "@/components/PageHead";
+import { LawAlertStrip, LawReviewButton } from "@/components/LawReview";
 import { T, pick } from "@/lib/i18n";
 
 export default function RulesPage() {
-  const { impactRan, runImpact, lang } = useStore();
+  const { impactRan, runImpact, lang, corpus, lawMode } = useStore();
   const [q, setQ] = useState("");
   const [fam, setFam] = useState<RuleFamily | "all">("all");
   const [sel, setSel] = useState("RULE-65T-04");
-  const rows = useMemo(() => RULES.filter((r) => {
+  const pack = rulesForLawMode(lawMode);
+  const visibleCorpus = corpusForLawMode(corpus, lawMode);
+  const stats = corpusStats(visibleCorpus);
+  const extraRules = lawMode === "compliance" ? complexRuleCount() : 0;
+  const rows = useMemo(() => pack.filter((r) => {
     const okF = fam === "all" || r.family === fam;
     const blob = (r.id + r.name + r.sec + r.logic).toLowerCase();
     return okF && (!q || blob.includes(q.toLowerCase()));
-  }), [q, fam]);
-  const rule = RULES.find((r) => r.id === sel) ?? rows[0] ?? RULES[0];
+  }), [q, fam, pack]);
+  const rule = pack.find((r) => r.id === sel) ?? rows[0] ?? pack[0];
+  const grounded = corpusForRule(rule, corpus);
+  const staleRule = grounded ? isCorpusStale(grounded.status) : false;
 
   return (
     <div>
@@ -29,12 +38,40 @@ export default function RulesPage() {
         titleTh="คลังกฎและเครื่องมือผลกระทบกฎหมายภาษี"
         titleZh="规则库与税法影响引擎"
         titleJa="ルール庫と税法インパクトエンジン"
-        subEn={`${RULES.length} coded rules covering s.65 ter, s.65 bis, RD 145, rates, credits, PND51/50, TP and BOI — not a single generic non-deductible switch.`}
-        subTh={`${RULES.length} กฎที่ลงรหัส ครอบคลุม ม.65 ตรี ม.65 ทวิ พ.ร.ฎ. 145 อัตรา เครดิต ภ.ง.ด.51/50 ราคาโอน และ BOI — ไม่ใช่สวิตช์ “หักไม่ได้” ก้อนเดียว`}
+        subEn={lawMode === "compliance"
+          ? `${pack.length} compliance-bar rules — s.65, s.65 bis/ter, RD 145, PND51/50, WHT. ${extraRules} further rules in Complex mode.`
+          : `${RULES.length} coded rules covering s.65 ter, s.65 bis, RD 145, rates, credits, PND51/50, TP and BOI — not a single generic non-deductible switch.`}
+        subTh={lawMode === "compliance"
+          ? `${pack.length} กฎเกณฑ์ขั้นต่ำ — ม.65 ม.65 ทวิ/ตรี พ.ร.ฎ. 145 ภ.ง.ด.51/50 เครดิต ณ ที่จ่าย อีก ${extraRules} กฎในโหมดครบทุกกฎหมาย`
+          : `${RULES.length} กฎที่ลงรหัส ครอบคลุม ม.65 ตรี ม.65 ทวิ พ.ร.ฎ. 145 อัตรา เครดิต ภ.ง.ด.51/50 ราคาโอน และ BOI — ไม่ใช่สวิตช์ “หักไม่ได้” ก้อนเดียว`}
         subZh={`${RULES.length} 条已编码规则，覆盖第65条之三、第65条之二、第145号法令、税率、抵免、PND51/50、转让定价与BOI。`}
         subJa={`${RULES.length}件の実装ルール。65条の3、65条の2、勅令145、税率、控除、PND51/50、移転価格、BOIをカバー。`}
-        actions={<button className="btn btn-primary" onClick={runImpact}><T en="Run impact engine" th="รันเครื่องมือผลกระทบ" zh="运行影响引擎" ja="インパクトエンジン実行" /></button>}
+        actions={
+          <>
+            <LawReviewButton compact />
+            <button className="btn btn-primary" onClick={runImpact}><T en="Run impact engine" th="รันเครื่องมือผลกระทบ" zh="运行影响引擎" ja="インパクトエンジン実行" /></button>
+          </>
+        }
       />
+
+      <div className="callout" style={{ marginTop: 16, fontSize: 13 }}>
+        <T
+          en={`${pack.length} rules grounded in ${stats.total} instruments${lawMode === "complex" ? ` — ${stats.stale} obsolete` : ""}.`}
+          th={`${pack.length} กฎยึด ${stats.total} ฉบับกฎหมาย${lawMode === "complex" ? ` — ล้าสมัย ${stats.stale} ฉบับ` : ""}`}
+          zh={`${pack.length} 条规则依据 ${stats.total} 部法规${lawMode === "complex" ? ` — ${stats.stale} 部已过时` : ""}。`}
+          ja={`${pack.length}ルールは${stats.total}法令に根拠${lawMode === "complex" ? ` — 失効${stats.stale}件` : ""}。`}
+        />
+        {extraRules > 0 && (
+          <>
+            {" "}
+            <T en={`${extraRules} further rules in Complex mode.`} th={`อีก ${extraRules} กฎในโหมดครบทุกกฎหมาย`} zh={`完整模式另有 ${extraRules} 条规则。`} ja={`コンプレックスにさらに${extraRules}件。`} />
+          </>
+        )}
+        {" "}
+        <Link href="/corpus"><T en="Open regulation corpus" th="เปิดคลังกฎหมาย" zh="打开法规库" ja="法令コーパスを開く" /></Link>
+      </div>
+
+      <LawAlertStrip />
 
       <div style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "1px solid var(--color-divider)", flexWrap: "wrap", alignItems: "center" }}>
         <input className="input" style={{ maxWidth: 320 }} value={q} onChange={(e) => setQ(e.target.value)} placeholder={pick(lang, { en: "Search id, section, name…", th: "ค้นหารหัส มาตรา ชื่อ…", zh: "搜索编号、条文、名称…", ja: "ID・条文・名称を検索…" })} />
@@ -50,7 +87,7 @@ export default function RulesPage() {
             </label>
           ))}
         </div>
-        <span className="text-muted" style={{ fontSize: 12, marginLeft: "auto" }}>{rows.length} / {RULES.length}</span>
+        <span className="text-muted" style={{ fontSize: 12, marginLeft: "auto" }}>{rows.length} / {pack.length}</span>
       </div>
 
       <div className="split-wide">
@@ -88,6 +125,22 @@ export default function RulesPage() {
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", color: "var(--color-accent)" }}>{rule.id} · {rule.version}</div>
           <h4 style={{ margin: "6px 0 4px" }}>{rule.name}</h4>
           <div className="text-muted" style={{ fontSize: 12 }}>{rule.sec} · {pick(lang, RULE_FAMILIES.find((f) => f.id === rule.family) ?? { en: rule.family, th: rule.family })} · {rule.effective}</div>
+          {grounded && (
+            <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+              <Link href={`/corpus?id=${grounded.id}`} className="tag tag-accent">{grounded.cite}</Link>
+              <span className={corpusStatusCls(grounded.status)}>{statusLabel(grounded.status, lang)}</span>
+            </div>
+          )}
+          {staleRule && grounded && (
+            <div className="callout" style={{ fontSize: 13, marginTop: 10 }}>
+              <T
+                en={`Rule grounded in obsolete regulation (${grounded.id} · ${grounded.cite}). Update the corpus or the rule pack before relying on this logic.`}
+                th={`กฎยึดกฎหมายที่ล้าสมัย (${grounded.id} · ${grounded.cite}) อัปเดตคลังกฎหมายหรือชุดกฎก่อนใช้`}
+                zh={`规则依据已过时法规（${grounded.id} · ${grounded.cite}）。依赖此前请更新法规库或规则包。`}
+                ja={`失効法令（${grounded.id} · ${grounded.cite}）に根拠。適用前にコーパスかルールを更新。`}
+              />
+            </div>
+          )}
           <p style={{ fontSize: 13, lineHeight: 1.6, marginTop: 12 }}>{rule.logic}</p>
           {rule.formula && (
             <div className="mono" style={{ fontSize: 12, background: "var(--color-surface)", padding: 10, marginTop: 8 }}>{rule.formula}</div>

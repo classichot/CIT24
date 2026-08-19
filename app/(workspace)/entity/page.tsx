@@ -1,6 +1,7 @@
 "use client";
 
 import { CLIENTS } from "@/lib/model";
+import { ENACTED_RATES } from "@/lib/tas12";
 import { useStore } from "@/lib/store";
 import { PageHead } from "@/components/PageHead";
 import { T } from "@/lib/i18n";
@@ -8,8 +9,9 @@ import { F } from "@/lib/format";
 import Link from "next/link";
 
 export default function EntityPage() {
-  const { clientId, losses, provision, whtCredit, locked } = useStore();
+  const { clientId, losses, provision, whtCredit, locked, lawMode } = useStore();
   const c = CLIENTS.find((x) => x.id === clientId) ?? CLIENTS[0];
+  const deep = lawMode === "complex";
 
   return (
     <div>
@@ -28,7 +30,11 @@ export default function EntityPage() {
             {[
               ["Tax ID", "เลขผู้เสียภาษี", c.tin],
               ["Accounting period", "รอบบัญชี", c.fyLabel],
-              ["Rate profile", "อัตราภาษี", c.rateProfile === "sme" ? "SME" : c.rateProfile === "listed" ? "Listed / financial" : "Normal 20%"],
+              ["Rate profile", "อัตราภาษี", c.rateProfile === "sme" ? "SME" : c.rateProfile === "listed" ? "Listed / financial" : "Normal 20% · substantively enacted"],
+              ["Deferred-tax rate", "อัตราภาษีรอตัดบัญชี", `${Math.round(provision.tas12.rate * 100)}% · TAS 12 (scenario on Deferred tax)`],
+              ["Foreign current tax", "ภาษีต่างประเทศงวดปัจจุบัน", "None this period"],
+              ...(deep ? [["Pillar Two", "เสาหลักสอง", "Out of scope · no P2 DTA/DTL"] as const] : []),
+              ["TAS 12 deferred tax", "ภาษีรอตัดบัญชี ต.บ. 12", provision.tas12.enabled ? "On · live DTA/DTL" : "Off · current tax only"],
               ["PND51 method", "วิธี ภ.ง.ด.51", c.pnd51Method === "67bis2" ? "s.67 bis (2) actual six-month" : "s.67 bis (1) estimated annual"],
               ["BOI", "BOI", c.boi ? "Promoted project on file" : "Non-BOI · MVP profile"],
               ["Functional currency", "สกุลเงินหลัก", "THB"],
@@ -71,6 +77,36 @@ export default function EntityPage() {
             <div className="wf-row"><span><T en="PND50" th="ภ.ง.ด.50" /></span><span>30 May 2027</span></div>
             <div className="wf-row"><span><T en="Period lock" th="ล็อกงวด" /></span><span>{locked ? "Locked" : "Open · continuous close to 31 Jul"}</span></div>
           </div>
+        </div>
+      </div>
+      <div className="panel" style={{ marginTop: 16 }}>
+        <div className="panel-head"><h4><T en="Enacted tax rates (TAS 12)" th="อัตราภาษีที่ประกาศใช้ (ต.บ. 12)" /></h4></div>
+        <div className="panel-body">
+          <table className="table" style={{ fontSize: 13 }}>
+            <thead>
+              <tr>
+                <th><T en="Rate" th="อัตรา" /></th>
+                <th className="num">%</th>
+                <th><T en="Enacted" th="ประกาศใช้" /></th>
+                <th><T en="Status" th="สถานะ" /></th>
+                <th><T en="Deferred tax" th="ภาษีรอตัดบัญชี" /></th>
+              </tr>
+            </thead>
+            <tbody>
+              {ENACTED_RATES.filter((r) => deep || r.id !== "p2-15").map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{r.en}</div>
+                    <div className="text-muted" style={{ fontSize: 11 }}>{r.note}</div>
+                  </td>
+                  <td className="num">{Math.round(r.rate * 100)}%</td>
+                  <td>{r.enacted}</td>
+                  <td>{r.status}</td>
+                  <td>{r.appliesToDt ? (provision.tas12.enabled && provision.tas12.rate === r.rate ? "Applied this close" : "Available") : "No DTA/DTL"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
       <div className="panel" style={{ marginTop: 16 }}>

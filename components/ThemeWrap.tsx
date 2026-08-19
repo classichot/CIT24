@@ -13,7 +13,7 @@ export function ThemeWrap({ children }: { children: ReactNode }) {
     root.lang = lang;
     root.style.colorScheme = THEMES[theme].scheme;
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", themeVars["--color-bg"] ?? "#f3f2f2");
+    if (meta) meta.setAttribute("content", themeVars["--color-bg"] ?? "#f4f3f8");
   }, [theme, themeVars, lang]);
   return <>{children}</>;
 }

@@ -9,9 +9,10 @@ import { PageHead, riskCls } from "@/components/PageHead";
 import { T, pnd } from "@/lib/i18n";
 import { F } from "@/lib/format";
 import { useStore } from "@/lib/store";
+import { LawAlertBanner } from "@/components/LawReview";
 
 export default function OverviewPage() {
-  const { mode, ask, lang, provision: p, reversals } = useStore();
+  const { mode, ask, lang, provision: p, reversals, lawMode } = useStore();
   const router = useRouter();
 
   return (
@@ -22,8 +23,12 @@ export default function OverviewPage() {
         kickerTh={mode === "advisor" ? "พื้นที่ที่ปรึกษา · กนิษฐ์และหุ้นส่วน" : "โหมดองค์กร · ปิดภาษีต่อเนื่อง"}
         titleEn="Tax close"
         titleTh="ปิดภาษี"
-        subEn="Upload once. CIT24 builds the provision, PND51, PND50 and remembers every position for next year."
-        subTh="นำเข้าครั้งเดียว CIT24 สร้างประมาณการ ภ.ง.ด.51 ภ.ง.ด.50 และจำทุกจุดยืนไว้สำหรับปีหน้า"
+        subEn={lawMode === "compliance"
+          ? "Compliance bar: taxable profit, material add-backs, PND51/50, WHT, RD 145, current tax. ETR = current tax ÷ PBT. TAS 12 deferred is off unless you turn it on."
+          : "Upload once. CIT24 builds the provision, PND51, PND50 and remembers every position for next year."}
+        subTh={lawMode === "compliance"
+          ? "เกณฑ์ขั้นต่ำ: กำไรสุทธิ บวกกลับสาระสำคัญ ภ.ง.ด.51/50 เครดิต ณ ที่จ่าย พ.ร.ฎ. 145 ภาษีงวดปัจจุบัน ETR = ภาษีงวดปัจจุบัน ÷ กำไรก่อนภาษี ต.บ. 12 รอตัดบัญชีปิดอยู่จนกว่าจะเปิด"
+          : "นำเข้าครั้งเดียว CIT24 สร้างประมาณการ ภ.ง.ด.51 ภ.ง.ด.50 และจำทุกจุดยืนไว้สำหรับปีหน้า"}
         actions={
           <>
             <Link href="/review" className="btn btn-secondary"><T en="Review queue" th="คิวสอบทาน" /></Link>
@@ -32,11 +37,15 @@ export default function OverviewPage() {
         }
       />
 
+      <LawAlertBanner />
+
       <div className="callout" style={{ margin: "16px 0 0" }}>
         <strong><T en="Deterministic engine CIT24-CALC 2026.2." th="เครื่องคำนวณ CIT24-CALC 2026.2" /></strong>{" "}
         <T en="Current tax" th="ภาษีงวดปัจจุบัน" /> <Amount n={p.currentTax} audit={p.audit} /> ·{" "}
         <T en="taxable profit" th="กำไรทางภาษี" /> <Amount n={p.taxableProfit} audit={p.audit} />.{" "}
-        <T en="AI proposed detections. Humans approved. The LLM did not calculate these figures." th="AI เสนอรายการ คนอนุมัติ โมเดลภาษาไม่ได้คำนวณตัวเลขเหล่านี้" />
+        {lawMode === "compliance"
+          ? <T en="Compliance mode — acceptable filing bar. Switch to Complex for full TAS 12, Pillar Two and corpus history." th="โหมดเกณฑ์ขั้นต่ำ — สลับเป็นครบทุกกฎหมายเพื่อ ต.บ. 12 เต็ม เสาหลักสอง และประวัติคลังกฎหมาย" />
+          : <T en="AI proposed detections. Humans approved. The LLM did not calculate these figures." th="AI เสนอรายการ คนอนุมัติ โมเดลภาษาไม่ได้คำนวณตัวเลขเหล่านี้" />}
       </div>
 
       <div className="stat-row" style={{ gridTemplateColumns: "repeat(4, 1fr)", marginTop: 0, borderTop: "2px solid var(--color-divider)" }}>

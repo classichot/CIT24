@@ -4,19 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, BookOpen, X } from "lucide-react";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { answerCopilot, SUGGESTIONS, type CopilotMsg } from "@/lib/copilot";
+import { answerCopilot, copilotIntro, SUGGESTIONS, type CopilotMsg } from "@/lib/copilot";
 import { simulatePnd51 } from "@/lib/engine";
 import { T } from "@/lib/i18n";
 
 export function Copilot() {
-  const { copilotOpen, setCopilotOpen, consumeAsk, pendingAsk, provision: p, pnd51 } = useStore();
-  const [log, setLog] = useState<CopilotMsg[]>([
-    {
-      role: "assistant",
-      text: "Ask CIT24. I answer from the Tax Adjustment Ledger and the approved Thai CIT rule pack — not from general model memory.\n\nAI proposes and explains. The deterministic engine calculates. I will not change an approved adjustment, pick a legal position, post a journal, submit a return, or change a rule version.",
-      cites: [{ label: "CIT24-CALC 2026.2" }],
-    },
-  ]);
+  const { copilotOpen, setCopilotOpen, consumeAsk, pendingAsk, provision: p, pnd51, corpus, lawMode, lawAlerts } = useStore();
+  const [log, setLog] = useState<CopilotMsg[]>(() => [copilotIntro()]);
   const [q, setQ] = useState("");
   const end = useRef<HTMLDivElement>(null);
 
@@ -35,7 +29,7 @@ export function Copilot() {
     const t = text.trim();
     if (!t) return;
     const sim = simulatePnd51(pnd51.g, pnd51.m, pnd51.declared, pnd51.method);
-    setLog((l) => [...l, { role: "user", text: t }, answerCopilot(t, p, sim)]);
+    setLog((l) => [...l, { role: "user", text: t }, answerCopilot(t, p, sim, corpus, lawMode, lawAlerts)]);
     setQ("");
   }
 

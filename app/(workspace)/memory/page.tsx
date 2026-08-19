@@ -36,6 +36,15 @@ export default function MemoryPage() {
           </button>
         }
       />
+      <div className="callout" style={{ marginTop: 16, fontSize: 13 }}>
+        <T
+          en="Legal source of truth is the regulation corpus — not staff recollection."
+          th="แหล่งกฎหมายที่เป็นจริงคือคลังกฎหมาย — ไม่ใช่ความจำของพนักงาน"
+          zh="法律事实来源是法规库，而非人员记忆。"
+          ja="法令の根拠はコーパスであり、担当者の記憶ではない。"
+        />{" "}
+        <Link href="/corpus"><T en="Open regulation corpus" th="เปิดคลังกฎหมาย" zh="打开法规库" ja="法令コーパスを開く" /></Link>
+      </div>
       <table className="table" style={{ marginTop: 20 }}>
         <thead>
           <tr>
