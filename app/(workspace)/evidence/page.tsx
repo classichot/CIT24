@@ -1,15 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { REQUESTS } from "@/lib/model";
 import { useStore } from "@/lib/store";
 import { PageHead, statusCls } from "@/components/PageHead";
 import { T } from "@/lib/i18n";
+import {
+  HOST_DAY_MS,
+  HOST_DAYS_DEFAULT,
+  HOST_DAYS_MAX,
+  HOST_DAYS_MIN,
+  clampHostDays,
+  formatHostWhen,
+  hostAbsUrl,
+} from "@/lib/hostReview";
 
 export default function EvidencePage() {
-  const { shareOpen, setShareOpen, flash } = useStore();
+  const { shareOpen, setShareOpen, flash, generateHostReview } = useStore();
   const [sel, setSel] = useState("RD-2026-118");
+  const [shareEmail, setShareEmail] = useState("audit.partner@sgv.co.th");
+  const [shareDays, setShareDays] = useState(String(HOST_DAYS_DEFAULT));
   const req = REQUESTS.find((r) => r.id === sel) ?? REQUESTS[0];
+  const days = clampHostDays(shareDays);
 
   return (
     <div>
@@ -86,13 +99,26 @@ export default function EvidencePage() {
             <div className="panel-head"><h4><T en="Controlled external share" th="การแบ่งปันภายนอกแบบควบคุม" /></h4></div>
             <div className="panel-body">
               <p className="text-muted" style={{ fontSize: 13 }}>
-                <T en="The recipient sees only the exhibits attached to RD-2026-118. Every open and download is logged against the request." th="ผู้รับจะเห็นเฉพาะเอกสารที่แนบกับคำขอ RD-2026-118 การเปิดและดาวน์โหลดทุกครั้งจะถูกบันทึกไว้กับคำขอนั้น" />
+                <T en="Issues a frozen hosted review of the live close (same pack as /host). The pack lives in this browser; the guest URL is /r/{token}." th="ออกชุดสอบทานโฮสต์แช่แข็งจากปิดภาษีสด (ชุดเดียวกับ /host) เก็บในเบราว์เซอร์นี้ URL ผู้เยี่ยมชมคือ /r/{token}" />
               </p>
-              <div className="field"><label><T en="Recipient email" th="อีเมลผู้รับ" /></label><input className="input" defaultValue="audit.partner@sgv.co.th" /></div>
-              <div className="field"><label><T en="Link expiry" th="วันหมดอายุลิงก์" /></label><input className="input" defaultValue="25 Aug 2026" /></div>
-              <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+              <div className="field"><label><T en="Recipient email" th="อีเมลผู้รับ" /></label><input className="input" type="email" value={shareEmail} onChange={(e) => setShareEmail(e.target.value)} /></div>
+              <div className="field">
+                <label><T en="Link length (days)" th="อายุลิงก์ (วัน)" /></label>
+                <input className="input" type="number" min={HOST_DAYS_MIN} max={HOST_DAYS_MAX} value={shareDays} onChange={(e) => setShareDays(e.target.value)} onBlur={() => setShareDays(String(days))} />
+                <div className="text-muted" style={{ fontSize: 12, marginTop: 6, textTransform: "none", letterSpacing: 0, fontWeight: 400 }}>
+                  <T en={`${days}-day link · expires ${formatHostWhen(new Date(Date.now() + days * HOST_DAY_MS).toISOString())} · default ${HOST_DAYS_DEFAULT}`} th={`ลิงก์ ${days} วัน · หมดอายุ ${formatHostWhen(new Date(Date.now() + days * HOST_DAY_MS).toISOString())} · ค่าเริ่มต้น ${HOST_DAYS_DEFAULT}`} />
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
                 <button className="btn btn-secondary" onClick={() => setShareOpen(false)}><T en="Cancel" th="ยกเลิก" /></button>
-                <button className="btn btn-primary" onClick={() => { setShareOpen(false); flash("Share link issued — expires 25 Aug 2026, watermarked, downloads monitored"); }}><T en="Issue link" th="ออกลิงก์" /></button>
+                <Link href="/host" className="btn btn-secondary" onClick={() => setShareOpen(false)}><T en="Open host page" th="เปิดหน้าโฮสต์" /></Link>
+                <button className="btn btn-primary" onClick={() => {
+                  const row = generateHostReview({ recipient: shareEmail, purpose: "auditor", days });
+                  if (!row) return;
+                  const url = hostAbsUrl(row.token);
+                  void navigator.clipboard.writeText(url).then(() => flash(`Copied ${days}-day link ${url}`), () => flash(url));
+                  setShareOpen(false);
+                }}><T en="Issue link" th="ออกลิงก์" /></button>
               </div>
             </div>
           </div>

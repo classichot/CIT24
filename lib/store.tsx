@@ -66,6 +66,15 @@ import {
   unreadLawAlertCount as countUnreadLawAlerts,
   type LawAlert,
 } from "./lawReview";
+import {
+  HOST_KEY,
+  buildHostReview,
+  hostPath,
+  hostStatus,
+  parseStoredHosts,
+  type HostPurpose,
+  type HostReview,
+} from "./hostReview";
 
 function actorOf(mode: ProductMode) {
   if (mode === "corporate") return CORPORATE_USER;
@@ -131,6 +140,11 @@ type Store = {
   runImpact: () => void;
   shareOpen: boolean;
   setShareOpen: (v: boolean) => void;
+  hostReviews: HostReview[];
+  generateHostReview: (opts: { recipient: string; purpose: HostPurpose; days?: number }) => HostReview | null;
+  revokeHostReview: (token: string) => boolean;
+  addHostNote: (token: string, text: string, who?: string) => boolean;
+  bumpHostView: (token: string) => void;
   adjustments: Adjustment[];
   extraAdjs: Adjustment[];
   provision: Provision;
@@ -205,6 +219,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
   const [clientId, setClientIdState] = useState("spp");
   const [extraClients, setExtraClients] = useState<Client[]>([]);
+  const [hostReviews, setHostReviews] = useState<HostReview[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(true);
@@ -304,6 +319,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const c = localStorage.getItem("cit24_client");
     if (c) setClientIdState(c);
     setExtraClients(parseStoredClients(localStorage.getItem(ENGAGEMENT_KEY)));
+    setHostReviews(parseStoredHosts(localStorage.getItem(HOST_KEY)));
     const law = localStorage.getItem("cit24_law");
     const nextLaw: LawMode = law === "complex" ? "complex" : "compliance";
     setLawModeState(nextLaw);
@@ -970,6 +986,105 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       : "TAS 12 deferred tax off. Current tax, PND50 and ETR are unchanged.");
   }, [readOnly, canMutate, flash, logEvent]);
 
+  const persistHosts = useCallback((updater: (prev: HostReview[]) => HostReview[]) => {
+    setHostReviews((prev) => {
+      const next = updater(prev);
+      if (next === prev) return prev;
+      try {
+        localStorage.setItem(HOST_KEY, JSON.stringify(next));
+      } catch {
+        /* quota / private mode */
+      }
+      return next;
+    });
+  }, []);
+
+  const generateHostReview = useCallback((opts: { recipient: string; purpose: HostPurpose; days?: number }) => {
+    const client = clients.find((c) => c.id === clientId) ?? clients[0];
+    const recipient = opts.recipient.trim();
+    if (!client) {
+      flash("No entity is open");
+      return null;
+    }
+    if (!recipient || !recipient.includes("@")) {
+      flash("Recipient email is required");
+      return null;
+    }
+    const row = buildHostReview({
+      client,
+      provision,
+      adjustments,
+      materiality,
+      mappingLocked,
+      certified,
+      locked,
+      fileChecks,
+      actor,
+      recipient,
+      purpose: opts.purpose,
+      days: opts.days,
+    });
+    persistHosts((prev) => [row, ...prev]);
+    logEvent(`Hosted review ${row.token} issued · ${row.days}-day link · ${row.recipient} · ${row.purpose}`);
+    flash(`${row.days}-day review link issued — ${hostPath(row.token)} (stored in this browser)`);
+    return row;
+  }, [clients, clientId, provision, adjustments, materiality, mappingLocked, certified, locked, fileChecks, actor, persistHosts, flash, logEvent]);
+
+  const revokeHostReview = useCallback((token: string) => {
+    let found: HostReview | undefined;
+    persistHosts((prev) => {
+      found = prev.find((r) => r.token === token);
+      if (!found || found.revoked) return prev;
+      return prev.map((r) => r.token === token ? { ...r, revoked: true } : r);
+    });
+    if (!found) {
+      flash("Review link not found");
+      return false;
+    }
+    if (found.revoked) {
+      flash("This link is already revoked");
+      return false;
+    }
+    logEvent(`Hosted review ${token} revoked`);
+    flash(`${token} revoked — the guest page will refuse access`);
+    return true;
+  }, [persistHosts, flash, logEvent]);
+
+  const addHostNote = useCallback((token: string, text: string, who?: string) => {
+    const body = text.trim();
+    if (!body) {
+      flash("Note text is required");
+      return false;
+    }
+    let found: HostReview | undefined;
+    persistHosts((prev) => {
+      found = prev.find((r) => r.token === token);
+      if (!found || hostStatus(found) !== "live") return prev;
+      return prev.map((r) => r.token === token
+        ? { ...r, notes: [...r.notes, { who: who ?? actor.name, text: body, when: stamp() }] }
+        : r);
+    });
+    if (!found) {
+      flash("Review link not found");
+      return false;
+    }
+    if (hostStatus(found) !== "live") {
+      flash("Notes can only be added while the link is live");
+      return false;
+    }
+    logEvent(`Hosted review note on ${token}`);
+    flash("Note added to the hosted pack");
+    return true;
+  }, [actor.name, persistHosts, flash, logEvent]);
+
+  const bumpHostView = useCallback((token: string) => {
+    persistHosts((prev) => {
+      const row = prev.find((r) => r.token === token);
+      if (!row || hostStatus(row) !== "live") return prev;
+      return prev.map((r) => r.token === token ? { ...r, views: r.views + 1 } : r);
+    });
+  }, [persistHosts]);
+
   const approvedMaps = useMemo(
     () => Object.fromEntries(accounts.filter((a) => a.mapped).map((a) => [a.code, true])),
     [accounts],
@@ -986,6 +1101,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl,
       locked, toggleLock, materiality, setMateriality, pnd51, setPnd51, evid, toggleEv,
       fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, setShareOpen,
+      hostReviews, generateHostReview, revokeHostReview, addHostNote, bumpHostView,
       adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence,
       certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal,
       runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50,
@@ -994,7 +1110,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       lawAlerts, lawReviewOpen, setLawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount,
       boiEnabled, setBoiEnabled, rentDriver, setRentDriver, approvedBoiRecs, approveBoiRec, certExtracted, extractBoiCert, boiPnl, scenario,
     }),
-    [ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang, clientId, setClientId, clients, addEngagement, toast, flash, navOpen, copilotOpen, pendingAsk, ask, consumeAsk, audit, statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount, mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl, locked, toggleLock, materiality, pnd51, setPnd51, evid, toggleEv, fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal, runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50, priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly, lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument, lawAlerts, lawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount, boiEnabled, setBoiEnabled, rentDriver, setRentDriver, approvedBoiRecs, approveBoiRec, certExtracted, extractBoiCert, boiPnl, scenario],
+    [ready, authed, login, logout, theme, setTheme, themeVars, mode, setMode, lang, setLang, clientId, setClientId, clients, addEngagement, toast, flash, navOpen, copilotOpen, pendingAsk, ask, consumeAsk, audit, statusOverride, setStatus, approvedMaps, acceptMap, changeMap, accounts, unmapped, mappedCount, mappingLocked, toggleMappingLock, mappingHistory, files, ingestFiles, addJulyGl, locked, toggleLock, materiality, pnd51, setPnd51, evid, toggleEv, fileChecks, toggleFc, notes, addNote, impactRan, runImpact, shareOpen, adjustments, extraAdjs, provision, actor, canMutate, isCfo, log, versions, evidence, linkEvidence, certs, matchCert, unmatchCert, whtCredit, whtUnmatched, losses, lossYears, reversals, claimReversal, runDetection, detections, acceptDetection, dismissDetection, certified, certifyReturn, pnd50Snaps, snapshotPnd50, priorImported, priorRows, importPriorYear, dtRate, setDtRate, recoverabilityConfirmed, confirmRecoverability, tas12Enabled, setTas12Enabled, readOnly, lawMode, setLawMode, corpus, markCorpusObsolete, reinstateCorpus, linkCorpusSuccessor, addCorpusInstrument, lawAlerts, lawReviewOpen, runLawReview, markLawAlertRead, markLawAlertsRead, dismissLawAlert, unreadLawAlertCount, boiEnabled, setBoiEnabled, rentDriver, setRentDriver, approvedBoiRecs, approveBoiRec, certExtracted, extractBoiCert, boiPnl, scenario, hostReviews, generateHostReview, revokeHostReview, addHostNote, bumpHostView],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -28,6 +28,7 @@ export default function ReviewPage() {
         subTh={`${actor.name} · ${actor.role}${readOnly ? " · อ่านอย่างเดียว" : ""}${locked ? " · ล็อกงวดแล้ว" : ""}`}
         actions={
           <>
+            <Link href="/host" className="btn btn-secondary"><T en="Host review link" th="ลิงก์สอบทานโฮสต์" /></Link>
             <button className="btn btn-secondary" onClick={toggleLock}>{locked ? <T en="Reopen period" th="เปิดงวดใหม่" /> : <T en="Lock FY2026" th="ล็อกปี 2569" />}</button>
             <button className="btn btn-primary" onClick={() => addNote()} disabled={readOnly}><T en="Add review note" th="เพิ่มบันทึกสอบทาน" /></button>
           </>

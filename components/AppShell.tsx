@@ -15,6 +15,7 @@ import {
   History,
   LayoutGrid,
   Library,
+  Link2,
   LogOut,
   Menu,
   MessageSquare,
@@ -74,6 +75,7 @@ const NAV = [
   { group: "Control", groupTh: "การควบคุม", groupZh: "控制", groupJa: "統制", items: [
     { href: "/playbook", en: "Law-depth playbook", th: "คู่มือความลึกกฎหมาย", zh: "法规深度手册", ja: "法令プレイブック", icon: ScrollText },
     { href: "/review", en: "Review & approval", th: "สอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認", icon: Check },
+    { href: "/host", en: "Hosted review", th: "ลิงก์สอบทาน", zh: "托管复核", ja: "ホストレビュー", icon: Link2 },
     { href: "/evidence", en: "Audit defence", th: "แฟ้มต่อสู้คดี", zh: "税务稽查应对", ja: "税務調査対応", icon: Shield },
     { href: "/ecosystem", en: "24 ecosystem", th: "ระบบนิเวศ 24", zh: "24 生态", ja: "24エコシステム", icon: Scale },
     { href: "/copilot", en: "Ask CIT24", th: "ถาม CIT24", zh: "询问 CIT24", ja: "CIT24に質問", icon: MessageSquare },
@@ -113,6 +115,7 @@ const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja
   "/disclosure": { kicker: { en: "TAS 12 note", th: "หมายเหตุ ต.บ. 12", zh: "TAS 12 附注", ja: "TAS 12注記" }, title: { en: "Income-tax disclosure", th: "การเปิดเผยภาษีเงินได้", zh: "所得税披露", ja: "法人税の注記" } },
   "/reports": { kicker: { en: "EN · TH · ZH · JA", th: "EN · TH · ZH · JA", zh: "英 · 泰 · 中 · 日", ja: "英 · 泰 · 中 · 日" }, title: { en: "Workpapers & packages", th: "กระดาษทำการและชุดเอกสาร", zh: "工作底稿与资料包", ja: "ワークペーパーとパッケージ" } },
   "/review": { kicker: { en: "Workflow", th: "ขั้นตอนงาน", zh: "工作流", ja: "ワークフロー" }, title: { en: "Review & approval", th: "การสอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認" } },
+  "/host": { kicker: { en: "Controlled share", th: "แบ่งปันแบบควบคุม", zh: "受控分享", ja: "管理共有" }, title: { en: "Hosted review", th: "ลิงก์สอบทานโฮสต์", zh: "托管复核", ja: "ホストレビュー" } },
   "/evidence": { kicker: { en: "Audit defence mode", th: "โหมดต่อสู้คดี", zh: "稽查应对模式", ja: "調査対応モード" }, title: { en: "Evidence room", th: "ห้องหลักฐาน", zh: "证据室", ja: "証憑ルーム" } },
   "/ecosystem": { kicker: { en: "Integrated 24", th: "ระบบ 24", zh: "24 集成", ja: "統合24" }, title: { en: "Tax ecosystem", th: "ระบบนิเวศภาษี", zh: "税务生态", ja: "税務エコシステム" } },
   "/copilot": { kicker: { en: "Intelligence", th: "ปัญญาประดิษฐ์", zh: "智能", ja: "インテリジェンス" }, title: { en: "Ask CIT24", th: "ถาม CIT24", zh: "询问 CIT24", ja: "CIT24に質問" } },

@@ -878,6 +878,8 @@ html[data-theme="bw"] .map-dot.topup {
   .drawer-panel { width: 100%; border-left: 0; }
   .btn { min-height: 44px; }
   .input, select.input, textarea.input { font-size: 16px; }
+  .host-guest-bar { padding: 12px 16px; }
+  .host-guest-body { padding: 16px 14px 72px; }
 }
 
 .dt-timeline {
@@ -962,6 +964,19 @@ html[data-theme="bw"] .map-dot.topup {
   .dt-flow { grid-template-columns: repeat(2, 1fr); }
   .dt-engines { grid-template-columns: 1fr; }
 }
+
+.host-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.host-days-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.host-days-row .range { margin-top: 0; flex: 1; min-width: 0; }
+.host-days-input { width: 88px; flex: none; text-align: right; }
+
+.host-guest { min-height: 100vh; background: var(--color-bg); color: var(--color-text); }
+.host-guest-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  padding: 14px 24px; border-bottom: 2px solid var(--color-divider);
+  background: var(--color-surface);
+}
+.host-guest-body { max-width: 1080px; margin: 0 auto; padding: 24px 20px 80px; }
 
 @media print {
   aside, header, .no-print, .bottom-nav, .sidebar, .copilot { display: none !important; }
