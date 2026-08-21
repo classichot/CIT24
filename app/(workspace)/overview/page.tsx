@@ -12,6 +12,7 @@ import { useStore } from "@/lib/store";
 import { LawAlertBanner } from "@/components/LawReview";
 import { LawToggle } from "@/components/LawToggle";
 import { StartEngage } from "@/components/StartEngage";
+import { HostLink } from "@/components/HostLink";
 
 export default function OverviewPage() {
   const { mode, ask, lang, provision: p, reversals, lawMode, clients, clientId, setClientId } = useStore();
@@ -38,6 +39,7 @@ export default function OverviewPage() {
             <Link href="/boi" className="btn btn-secondary"><T en="BOI desk" th="โต๊ะ BOI" /></Link>
             <Link href="/playbook" className="btn btn-secondary"><T en="Mode playbook" th="คู่มือโหมด" /></Link>
             <Link href="/review" className="btn btn-secondary"><T en="Review queue" th="คิวสอบทาน" /></Link>
+            <HostLink />
             <Link href="/pnd51" className="btn btn-primary"><T en="Open PND51 simulator" th="เปิดแบบจำลอง ภ.ง.ด.51" /></Link>
           </>
         }

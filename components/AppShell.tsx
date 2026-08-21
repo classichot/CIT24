@@ -37,6 +37,7 @@ import { BoiToggle } from "@/components/BoiToggle";
 import { Copilot } from "@/components/Copilot";
 import { AuditTrail } from "@/components/AuditTrail";
 import { StartEngage } from "@/components/StartEngage";
+import { HostLink } from "@/components/HostLink";
 import { pick, T } from "@/lib/i18n";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
@@ -73,9 +74,9 @@ const NAV = [
     { href: "/reports", en: "Reports", th: "รายงาน", zh: "报告", ja: "レポート", icon: Database },
   ]},
   { group: "Control", groupTh: "การควบคุม", groupZh: "控制", groupJa: "統制", items: [
+    { href: "/host", en: "Hosted review", th: "ลิงก์สอบทาน", zh: "托管复核", ja: "ホストレビュー", icon: Link2, hot: true },
     { href: "/playbook", en: "Law-depth playbook", th: "คู่มือความลึกกฎหมาย", zh: "法规深度手册", ja: "法令プレイブック", icon: ScrollText },
     { href: "/review", en: "Review & approval", th: "สอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認", icon: Check },
-    { href: "/host", en: "Hosted review", th: "ลิงก์สอบทาน", zh: "托管复核", ja: "ホストレビュー", icon: Link2 },
     { href: "/evidence", en: "Audit defence", th: "แฟ้มต่อสู้คดี", zh: "税务稽查应对", ja: "税務調査対応", icon: Shield },
     { href: "/ecosystem", en: "24 ecosystem", th: "ระบบนิเวศ 24", zh: "24 生态", ja: "24エコシステム", icon: Scale },
     { href: "/copilot", en: "Ask CIT24", th: "ถาม CIT24", zh: "询问 CIT24", ja: "CIT24に質問", icon: MessageSquare },
@@ -91,8 +92,8 @@ const TABS = [
   { href: "/overview", label: "Home", icon: LayoutGrid },
   { href: "/ledger", label: "Ledger", icon: GitBranch },
   { href: "/pnd51", label: "51", icon: AlertTriangle },
-  { href: "/pnd50", label: "50", icon: FileText },
   { href: "/review", label: "Review", icon: Check },
+  { href: "/host", label: "Host", icon: Link2 },
 ];
 
 const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja?: string }; title: { en: string; th: string; zh?: string; ja?: string } }> = {
@@ -168,6 +169,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="sidebar-start">
           <div className="sidebar-start-kicker"><T en="Start here" th="เริ่มที่นี่" zh="从这里开始" ja="ここから開始" /></div>
           <StartEngage block />
+          <div className="sidebar-start-kicker" style={{ marginTop: 12 }}><T en="Share a review" th="แชร์สอบทาน" zh="分享复核" ja="レビュー共有" /></div>
+          <HostLink block />
         </div>
         <div className="sidebar-law">
           <LawToggle variant="block" />
@@ -239,6 +242,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {lang === "th" ? "ภ.ง.ด.51" : "PND51"} · {loc(lang, "due 31 Aug 2026 · 13 days", "ครบ 31 ส.ค. 2569 · 13 วัน", "截止 2026年8月31日 · 13天", "期限 2026年8月31日 · 13日")}
           </div>
           <StartEngage />
+          <HostLink compact />
           <LawToggle />
           <BoiToggle />
           <LangToggle />

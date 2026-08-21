@@ -12,6 +12,7 @@ const STEPS = [
   { href: "/pnd51", en: "PND51", th: "ภ.ง.ด.51", zh: "PND51", ja: "PND51" },
   { href: "/pnd50", en: "PND50", th: "ภ.ง.ด.50", zh: "PND50", ja: "PND50" },
   { href: "/review", en: "Approve", th: "อนุมัติ", zh: "批准", ja: "承認" },
+  { href: "/host", en: "Host", th: "โฮสต์", zh: "托管", ja: "ホスト" },
 ];
 
 export function FlowBar() {
