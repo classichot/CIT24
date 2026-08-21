@@ -91,7 +91,7 @@ export default function HostPage() {
         <header className="login-pane-head">
           <div>
             <div className="login-mark">CIT24<span /></div>
-            <span className="login-kicker">7L host</span>
+            <span className="login-kicker">Host desk</span>
           </div>
         </header>
         <div className="login-pane-body">
@@ -120,7 +120,7 @@ export default function HostPage() {
 
       <section className="login-pane login-auth">
         <header className="login-pane-head">
-          <div className="login-kicker-ghost">Mint invite</div>
+          <div className="login-kicker-ghost">Host desk</div>
           <Link href="/" className="btn btn-ghost" style={{ fontSize: 12 }}>Public login</Link>
         </header>
         <div className="login-pane-body">

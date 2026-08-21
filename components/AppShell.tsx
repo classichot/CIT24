@@ -75,7 +75,7 @@ const NAV = [
     { href: "/reports", en: "Reports", th: "รายงาน", zh: "报告", ja: "レポート", icon: Database },
   ]},
   { group: "Control", groupTh: "การควบคุม", groupZh: "控制", groupJa: "統制", items: [
-    { href: "/host", en: "Mint demo link", th: "สร้างลิงก์เดโม", zh: "生成演示链接", ja: "デモリンク発行", icon: Link2, hot: true },
+    { href: "/host", en: "Host desk", th: "โต๊ะโฮสต์", zh: "主机台", ja: "ホストデスク", icon: Link2, hot: true },
     { href: "/playbook", en: "Law-depth playbook", th: "คู่มือความลึกกฎหมาย", zh: "法规深度手册", ja: "法令プレイブック", icon: ScrollText },
     { href: "/review", en: "Review & approval", th: "สอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認", icon: Check },
     { href: "/evidence", en: "Audit defence", th: "แฟ้มต่อสู้คดี", zh: "税务稽查应对", ja: "税務調査対応", icon: Shield },
@@ -94,7 +94,7 @@ const TABS = [
   { href: "/ledger", label: "Ledger", icon: GitBranch },
   { href: "/pnd51", label: "51", icon: AlertTriangle },
   { href: "/review", label: "Review", icon: Check },
-  { href: "/host", label: "Host", icon: Link2 },
+  { href: "/host", label: "Desk", icon: Link2 },
 ];
 
 const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja?: string }; title: { en: string; th: string; zh?: string; ja?: string } }> = {
@@ -117,7 +117,7 @@ const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja
   "/disclosure": { kicker: { en: "TAS 12 note", th: "หมายเหตุ ต.บ. 12", zh: "TAS 12 附注", ja: "TAS 12注記" }, title: { en: "Income-tax disclosure", th: "การเปิดเผยภาษีเงินได้", zh: "所得税披露", ja: "法人税の注記" } },
   "/reports": { kicker: { en: "EN · TH · ZH · JA", th: "EN · TH · ZH · JA", zh: "英 · 泰 · 中 · 日", ja: "英 · 泰 · 中 · 日" }, title: { en: "Workpapers & packages", th: "กระดาษทำการและชุดเอกสาร", zh: "工作底稿与资料包", ja: "ワークペーパーとパッケージ" } },
   "/review": { kicker: { en: "Workflow", th: "ขั้นตอนงาน", zh: "工作流", ja: "ワークフロー" }, title: { en: "Review & approval", th: "การสอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認" } },
-  "/host": { kicker: { en: "7L host", th: "โฮสต์ 7L", zh: "7L 主机", ja: "7Lホスト" }, title: { en: "Mint demo link", th: "สร้างลิงก์เดโม", zh: "生成演示链接", ja: "デモリンク発行" } },
+  "/host": { kicker: { en: "7L host", th: "โฮสต์ 7L", zh: "7L 主机", ja: "7Lホスト" }, title: { en: "Host desk", th: "โต๊ะโฮสต์", zh: "主机台", ja: "ホストデスク" } },
   "/evidence": { kicker: { en: "Audit defence mode", th: "โหมดต่อสู้คดี", zh: "稽查应对模式", ja: "調査対応モード" }, title: { en: "Evidence room", th: "ห้องหลักฐาน", zh: "证据室", ja: "証憑ルーム" } },
   "/ecosystem": { kicker: { en: "Integrated 24", th: "ระบบ 24", zh: "24 集成", ja: "統合24" }, title: { en: "Tax ecosystem", th: "ระบบนิเวศภาษี", zh: "税务生态", ja: "税務エコシステム" } },
   "/copilot": { kicker: { en: "Intelligence", th: "ปัญญาประดิษฐ์", zh: "智能", ja: "インテリジェンス" }, title: { en: "Ask CIT24", th: "ถาม CIT24", zh: "询问 CIT24", ja: "CIT24に質問" } },
@@ -173,7 +173,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="sidebar-start">
           <div className="sidebar-start-kicker"><T en="Start here" th="เริ่มที่นี่" zh="从这里开始" ja="ここから開始" /></div>
           <StartEngage block />
-          <div className="sidebar-start-kicker" style={{ marginTop: 12 }}><T en="Share a demo" th="แชร์เดโม" zh="分享演示" ja="デモ共有" /></div>
+          <div className="sidebar-start-kicker" style={{ marginTop: 12 }}><T en="Host desk" th="โต๊ะโฮสต์" zh="主机台" ja="ホストデスク" /></div>
           <HostLink block />
         </div>
         <div className="sidebar-law">

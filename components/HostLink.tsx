@@ -10,8 +10,8 @@ export function HostLink({ block = false, compact = false }: { block?: boolean; 
     <Link href="/host" className={className}>
       <Link2 size={15} />
       {compact
-        ? <T en="Host" th="โฮสต์" zh="托管" ja="ホスト" />
-        : <T en="Mint demo link" th="สร้างลิงก์เดโม" zh="生成演示链接" ja="デモリンク発行" />}
+        ? <T en="Desk" th="โฮสต์" zh="主机台" ja="デスク" />
+        : <T en="Host desk" th="โต๊ะโฮสต์" zh="主机台" ja="ホストデスク" />}
     </Link>
   );
 }
