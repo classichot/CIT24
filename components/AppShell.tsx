@@ -39,8 +39,9 @@ import { AuditTrail } from "@/components/AuditTrail";
 import { StartEngage } from "@/components/StartEngage";
 import { HostLink } from "@/components/HostLink";
 import { pick, T } from "@/lib/i18n";
+import { formatExpiry, hoursLeft, readInviteSession } from "@/lib/invite";
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const NAV = [
   { group: "Workspace", groupTh: "พื้นที่ทำงาน", groupZh: "工作区", groupJa: "ワークスペース", items: [
@@ -74,7 +75,7 @@ const NAV = [
     { href: "/reports", en: "Reports", th: "รายงาน", zh: "报告", ja: "レポート", icon: Database },
   ]},
   { group: "Control", groupTh: "การควบคุม", groupZh: "控制", groupJa: "統制", items: [
-    { href: "/host", en: "Hosted review", th: "ลิงก์สอบทาน", zh: "托管复核", ja: "ホストレビュー", icon: Link2, hot: true },
+    { href: "/host", en: "Mint demo link", th: "สร้างลิงก์เดโม", zh: "生成演示链接", ja: "デモリンク発行", icon: Link2, hot: true },
     { href: "/playbook", en: "Law-depth playbook", th: "คู่มือความลึกกฎหมาย", zh: "法规深度手册", ja: "法令プレイブック", icon: ScrollText },
     { href: "/review", en: "Review & approval", th: "สอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認", icon: Check },
     { href: "/evidence", en: "Audit defence", th: "แฟ้มต่อสู้คดี", zh: "税务稽查应对", ja: "税務調査対応", icon: Shield },
@@ -116,7 +117,7 @@ const TITLES: Record<string, { kicker: { en: string; th: string; zh?: string; ja
   "/disclosure": { kicker: { en: "TAS 12 note", th: "หมายเหตุ ต.บ. 12", zh: "TAS 12 附注", ja: "TAS 12注記" }, title: { en: "Income-tax disclosure", th: "การเปิดเผยภาษีเงินได้", zh: "所得税披露", ja: "法人税の注記" } },
   "/reports": { kicker: { en: "EN · TH · ZH · JA", th: "EN · TH · ZH · JA", zh: "英 · 泰 · 中 · 日", ja: "英 · 泰 · 中 · 日" }, title: { en: "Workpapers & packages", th: "กระดาษทำการและชุดเอกสาร", zh: "工作底稿与资料包", ja: "ワークペーパーとパッケージ" } },
   "/review": { kicker: { en: "Workflow", th: "ขั้นตอนงาน", zh: "工作流", ja: "ワークフロー" }, title: { en: "Review & approval", th: "การสอบทานและอนุมัติ", zh: "复核与批准", ja: "レビューと承認" } },
-  "/host": { kicker: { en: "Controlled share", th: "แบ่งปันแบบควบคุม", zh: "受控分享", ja: "管理共有" }, title: { en: "Hosted review", th: "ลิงก์สอบทานโฮสต์", zh: "托管复核", ja: "ホストレビュー" } },
+  "/host": { kicker: { en: "7L host", th: "โฮสต์ 7L", zh: "7L 主机", ja: "7Lホスト" }, title: { en: "Mint demo link", th: "สร้างลิงก์เดโม", zh: "生成演示链接", ja: "デモリンク発行" } },
   "/evidence": { kicker: { en: "Audit defence mode", th: "โหมดต่อสู้คดี", zh: "稽查应对模式", ja: "調査対応モード" }, title: { en: "Evidence room", th: "ห้องหลักฐาน", zh: "证据室", ja: "証憑ルーム" } },
   "/ecosystem": { kicker: { en: "Integrated 24", th: "ระบบ 24", zh: "24 集成", ja: "統合24" }, title: { en: "Tax ecosystem", th: "ระบบนิเวศภาษี", zh: "税务生态", ja: "税務エコシステム" } },
   "/copilot": { kicker: { en: "Intelligence", th: "ปัญญาประดิษฐ์", zh: "智能", ja: "インテリジェンス" }, title: { en: "Ask CIT24", th: "ถาม CIT24", zh: "询问 CIT24", ja: "CIT24に質問" } },
@@ -142,8 +143,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const user = mode === "advisor" ? ADVISOR_USER : mode === "defence" ? DEFENCE_USER : CORPORATE_USER;
   const client = clients.find((c) => c.id === clientId) ?? clients[0];
   const title = TITLES[path] || { kicker: { en: "CIT24", th: "CIT24" }, title: { en: "Thai CIT OS", th: "ระบบภาษีนิติบุคคล", zh: "泰国企业所得税系统", ja: "タイ法人税OS" } };
+  const [invite, setInvite] = useState<ReturnType<typeof readInviteSession>>(null);
+  const inviteHours = invite ? hoursLeft(invite.exp) : 0;
 
   useEffect(() => { setNavOpen(false); }, [path, setNavOpen]);
+  useEffect(() => { setInvite(readInviteSession()); }, [path]);
 
   return (
     <div className="shell">
@@ -169,7 +173,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="sidebar-start">
           <div className="sidebar-start-kicker"><T en="Start here" th="เริ่มที่นี่" zh="从这里开始" ja="ここから開始" /></div>
           <StartEngage block />
-          <div className="sidebar-start-kicker" style={{ marginTop: 12 }}><T en="Share a review" th="แชร์สอบทาน" zh="分享复核" ja="レビュー共有" /></div>
+          <div className="sidebar-start-kicker" style={{ marginTop: 12 }}><T en="Share a demo" th="แชร์เดโม" zh="分享演示" ja="デモ共有" /></div>
           <HostLink block />
         </div>
         <div className="sidebar-law">
@@ -250,6 +254,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button className="btn btn-secondary header-hide-sm" onClick={() => setCopilotOpen(!copilotOpen)}><MessageSquare size={16} /><T en="Ask CIT24" th="ถาม CIT24" zh="询问 CIT24" ja="CIT24に質問" /></button>
           <Link href="/pnd50" className="btn btn-primary header-hide-sm"><FileText size={16} /><T en="Filing pack" th="ชุดยื่นแบบ" zh="申报包" ja="申告パック" /></Link>
         </header>
+        {invite && (
+          <div className="deadline-pill" style={{ borderRadius: 0, justifyContent: "center" }}>
+            <AlertTriangle size={13} />
+            {loc(lang, `Demo review link · until ${formatExpiry(invite.exp)} · ~${Math.max(1, Math.ceil(inviteHours / 24))}d left`, `ลิงก์เดโม · ถึง ${formatExpiry(invite.exp)} · เหลือราว ${Math.max(1, Math.ceil(inviteHours / 24))} วัน`)}
+          </div>
+        )}
         <div className="workspace">
           <main className="page-main">{children}</main>
           <Copilot />

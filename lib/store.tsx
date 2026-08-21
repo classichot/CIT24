@@ -75,6 +75,7 @@ import {
   type HostPurpose,
   type HostReview,
 } from "./hostReview";
+import { clearInviteSession } from "./invite";
 
 function actorOf(mode: ProductMode) {
   if (mode === "corporate") return CORPORATE_USER;
@@ -85,7 +86,7 @@ function actorOf(mode: ProductMode) {
 type Store = {
   ready: boolean;
   authed: boolean;
-  login: (mode: ProductMode) => void;
+  login: (mode: ProductMode, opts?: { invite?: boolean }) => void;
   logout: () => void;
   theme: ThemeKey;
   setTheme: (k: ThemeKey) => void;
@@ -331,11 +332,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
 
-  const login = useCallback((m: ProductMode) => {
+  const login = useCallback((m: ProductMode, opts?: { invite?: boolean }) => {
     setModeState(m);
     setAuthed(true);
     localStorage.setItem("cit24_auth", "1");
     localStorage.setItem("cit24_mode", m);
+    if (!opts?.invite) clearInviteSession();
     if (m === "corporate") {
       setClientIdState("spp");
       localStorage.setItem("cit24_client", "spp");
@@ -345,6 +347,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setAuthed(false);
     localStorage.removeItem("cit24_auth");
+    clearInviteSession();
   }, []);
 
   const setTheme = useCallback((k: ThemeKey) => {

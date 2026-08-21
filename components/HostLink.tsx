@@ -11,7 +11,7 @@ export function HostLink({ block = false, compact = false }: { block?: boolean; 
       <Link2 size={15} />
       {compact
         ? <T en="Host" th="โฮสต์" zh="托管" ja="ホスト" />
-        : <T en="Hosted review" th="ลิงก์สอบทาน" zh="托管复核" ja="ホストレビュー" />}
+        : <T en="Mint demo link" th="สร้างลิงก์เดโม" zh="生成演示链接" ja="デモリンク発行" />}
     </Link>
   );
 }
